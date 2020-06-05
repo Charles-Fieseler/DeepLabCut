@@ -44,9 +44,15 @@ def make_labeled_image(
     alphavalue = cfg["alphavalue"]  # .5
     dotsize = cfg["dotsize"]  # =15
 
-    im = io.imread(os.path.join(imagebasefolder, DataCombined.index[imagenr]))
-    if np.ndim(im) > 2:  # color image!
-        h, w, numcolors = np.shape(im)
+    plt.axis('off')
+    im=io.imread(os.path.join(imagebasefolder,DataCombined.index[imagenr]))
+    #print(np.shape(im))
+    # Charlie: do a max projection; format is ZXY
+    if cfg['using_z_slices']:
+        im = np.max(im, axis=0)
+    # Continue
+    if np.ndim(im)>2: #color image!
+        h,w,numcolors=np.shape(im)
     else:
         h, w = np.shape(im)
     fig, ax = prepare_figure_axes(w, h, scaling)

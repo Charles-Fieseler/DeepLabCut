@@ -514,6 +514,43 @@ def check_labels(
         "If all the labels are ok, then use the function 'create_training_dataset' to create the training dataset!"
     )
 
+        #print(image.shape)
+        # Charlie: do a max projection; format is ZXY
+        if cfg['using_z_slices']:
+            image = np.max(image, axis=0)
+        if np.ndim(image)==2:
+            h, w = np.shape(image)
+        else:
+            h, w, nc = np.shape(image)
+
+        plt.figure(
+            frameon=False, figsize=(w * 1. / 100 * scale, h * 1. / 100 * scale))
+        plt.subplots_adjust(
+            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+
+        plt.imshow(image, 'gray')
+        if index==0:
+            print("They are stored in the following folder: %s." %tmpfolder) #folder)
+
+        for c, bp in enumerate(cfg['bodyparts']):
+            plt.plot(
+                DataCombined[cfg['scorer']][bp]['x'].values[index],
+                DataCombined[cfg['scorer']][bp]['y'].values[index],
+                Labels[cc],
+                color=Colorscheme(c),
+                alpha=cfg['alphavalue'],
+                ms=cfg['dotsize'])
+
+        plt.xlim(0, w)
+        plt.ylim(0, h)
+        plt.axis('off')
+        plt.subplots_adjust(
+            left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+        plt.gca().invert_yaxis()
+
+        #plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1]))
+        plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name))) #create file name also on Windows for Unix projects (and vice versa)
+        plt.close("all")
 
 def boxitintoacell(joints):
     """ Auxiliary function for creating matfile."""
@@ -788,6 +825,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         filename = df.index[i]
         data["image"] = filename
         img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
+
         try:
             data["size"] = img_shape[2], img_shape[0], img_shape[1]
         except IndexError:
@@ -818,6 +856,48 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
     return train_data, matlab_data
 
 
+# Charlie addition
+def format_training_data_slices(df, train_inds, nbodyparts, project_path):
+    train_data = []
+    matlab_data = []
+
+    def to_matlab_cell(array):
+        outer = np.array([[None]], dtype=object)
+        outer[0, 0] = array.astype('int64')
+        return outer
+
+    for i in train_inds:
+        data = dict()
+        filename = df.index[i]
+        data['image'] = filename
+        img_shape = _read_image_shape_fast(os.path.join(project_path, filename))
+        # Charlie: data['size'] format: CXYZ
+        # Input format: slice, row, col
+        data['size'] = 1, img_shape[1], img_shape[2], img_shape[0]
+        temp = df.iloc[i].values.reshape(-1, 3) # Charlie: Read xyz of annotations
+        joints = np.c_[range(nbodyparts), temp] # Add integer labels
+        joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
+        # Check that points lie within the image
+        # Charlie: Why did it check for img_shape[0]??
+        inside = np.logical_and(np.logical_and(joints[:, 1] < img_shape[2], joints[:, 1] > 0),
+                                np.logical_and(joints[:, 2] < img_shape[1], joints[:, 2] > 0))
+        #print(img_shape)
+        #print(joints)
+        #print(joints[~inside])
+        if not all(inside):
+            joints = joints[inside]
+            print("Removing {}/{} joints that are not inside the image".format(
+                len(np.argwhere(~inside)), len(inside)))
+        if joints.size:  # Exclude images without labels
+            data['joints'] = joints
+            train_data.append(data)
+            matlab_data.append((np.array([data['image']], dtype='U'),
+                                np.array([data['size']]),
+                                to_matlab_cell(data['joints'])))
+    #print("matlab_data {}".format(matlab_data))
+    matlab_data = np.asarray(matlab_data, dtype=[('image', 'O'), ('size', 'O'), ('joints', 'O')])
+    return train_data, matlab_data
+                            
 def create_training_dataset(
     config,
     num_shuffles=1,
@@ -931,6 +1011,86 @@ def create_training_dataset(
         model_path, num_shuffles = auxfun_models.Check4weights(
             net_type, Path(dlcparent_path), num_shuffles
         )
+
+    #print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
+    if trainIndexes is None and testIndexes is None:
+        splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
+                  for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
+    else:
+        if len(trainIndexes) != len(testIndexes) != len(Shuffles):
+            raise ValueError('Number of Shuffles and train and test indexes should be equal.')
+        splits = []
+        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
+            trainFraction = round(len(train_inds) * 1./ (len(train_inds) + len(test_inds)), 2)
+            print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
+            splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
+
+    bodyparts = cfg['bodyparts']
+    nbodyparts = len(bodyparts)
+    for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
+        if len(trainIndexes)>0:
+            if userfeedback:
+                trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
+                if trainposeconfigfile.is_file():
+                    askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
+                    if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
+                        raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
+
+            ####################################################
+            # Generating data structure with labeled information & frame metadata (for deep cut)
+            ####################################################
+            # Make training file!
+            datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
+                                                                                            trainFraction, shuffle, cfg)
+
+            ################################################################################
+            # Saving data file (convert to training file for deeper cut (*.mat))
+            ################################################################################
+            # Charlie addition: check for 3d training data
+            using_z_slices = cfg['using_z_slices']
+            #using_z_slices = cfg.get('using_z_slices', False)
+            if not using_z_slices:
+                # default
+                data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+            else:
+                print("Recognized zslice training data; using custom function")
+                data, MatlabData = format_training_data_slices(Data, trainIndexes, nbodyparts, project_path)
+            sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
+
+            ################################################################################
+            # Saving metadata (Pickle file)
+            ################################################################################
+            auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
+
+            ################################################################################
+            # Creating file structure for training &
+            # Test files as well as pose_yaml files (containing training and testing information)
+            #################################################################################
+            modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
+            auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
+            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/train')
+            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/test')
+
+            path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
+            path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
+            #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
+
+            items2change = {
+                "dataset": datafilename,
+                "metadataset": metadatafilename,
+                "num_joints": len(bodyparts),
+                "all_joints": [[i] for i in range(len(bodyparts))],
+                "all_joints_names": [str(bpt) for bpt in bodyparts],
+                "init_weights": model_path,
+                "project_path": str(cfg['project_path']),
+                "net_type": net_type,
+                "dataset_type": augmenter_type,
+            }
+            trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
+            keys2save = [
+                "dataset", "num_joints", "all_joints", "all_joints_names",
+                "net_type", 'init_weights', 'global_scale', 'location_refinement',
+                'locref_stdev'
 
         if Shuffles is None:
             Shuffles = range(1, num_shuffles + 1)

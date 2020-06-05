@@ -52,6 +52,20 @@ class ImagePanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.Fit()
 
+        # From Charlie:
+        self.preloaded_images = []
+
+    def preload_images(self, parent_obj):
+########
+        # From Charlie: pre-load the pictures
+        #   todo: make configurable
+        if True:
+            print("Pre-loading {} images into memory...".format(len(parent_obj.index)))
+            for im_fname in parent_obj.index:
+                self.preloaded_images.append(cv2.imread(im_fname)[...,::-1])
+            print("Finished loading {} images.".format(len(self.preloaded_images)))
+########
+
     def getfigure(self):
         return self.figure
 
