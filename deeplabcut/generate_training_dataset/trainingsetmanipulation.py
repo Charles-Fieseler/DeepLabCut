@@ -1090,7 +1090,7 @@ def create_training_dataset(
             keys2save = [
                 "dataset", "num_joints", "all_joints", "all_joints_names",
                 "net_type", 'init_weights', 'global_scale', 'location_refinement',
-                'locref_stdev'
+                'locref_stdev']
 
         if Shuffles is None:
             Shuffles = range(1, num_shuffles + 1)
