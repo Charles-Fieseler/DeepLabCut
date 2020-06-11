@@ -280,6 +280,10 @@ def make_labeled_images_from_dataframe(
     attempttomakefolder(tmpfolder)
     ic = io.imread_collection(images.to_list())
 
+    # Do a max projection if 3d
+    if cfg['using_z_slices']:
+        ic = np.max(ic, axis=0)
+
     h, w = ic[0].shape[:2]
     fig, ax = prepare_figure_axes(w, h, scale, dpi)
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
