@@ -516,41 +516,41 @@ def check_labels(
 
     #print(image.shape)
     # Charlie: do a max projection; format is ZXY
-    if cfg['using_z_slices']:
-        image = np.max(image, axis=0)
-    if np.ndim(image)==2:
-        h, w = np.shape(image)
-    else:
-        h, w, nc = np.shape(image)
-
-    plt.figure(
-        frameon=False, figsize=(w * 1. / 100 * scale, h * 1. / 100 * scale))
-    plt.subplots_adjust(
-        left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-    plt.imshow(image, 'gray')
-    if index==0:
-        print("They are stored in the following folder: %s." %tmpfolder) #folder)
-
-    for c, bp in enumerate(cfg['bodyparts']):
-        plt.plot(
-            DataCombined[cfg['scorer']][bp]['x'].values[index],
-            DataCombined[cfg['scorer']][bp]['y'].values[index],
-            Labels[cc],
-            color=Colorscheme(c),
-            alpha=cfg['alphavalue'],
-            ms=cfg['dotsize'])
-
-    plt.xlim(0, w)
-    plt.ylim(0, h)
-    plt.axis('off')
-    plt.subplots_adjust(
-        left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    plt.gca().invert_yaxis()
-
-    #plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1]))
-    plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name))) #create file name also on Windows for Unix projects (and vice versa)
-    plt.close("all")
+    # if cfg['using_z_slices']:
+    #     image = np.max(image, axis=0)
+    # if np.ndim(image)==2:
+    #     h, w = np.shape(image)
+    # else:
+    #     h, w, nc = np.shape(image)
+    #
+    # plt.figure(
+    #     frameon=False, figsize=(w * 1. / 100 * scale, h * 1. / 100 * scale))
+    # plt.subplots_adjust(
+    #     left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    #
+    # plt.imshow(image, 'gray')
+    # if index==0:
+    #     print("They are stored in the following folder: %s." %tmpfolder) #folder)
+    #
+    # for c, bp in enumerate(cfg['bodyparts']):
+    #     plt.plot(
+    #         DataCombined[cfg['scorer']][bp]['x'].values[index],
+    #         DataCombined[cfg['scorer']][bp]['y'].values[index],
+    #         Labels[cc],
+    #         color=Colorscheme(c),
+    #         alpha=cfg['alphavalue'],
+    #         ms=cfg['dotsize'])
+    #
+    # plt.xlim(0, w)
+    # plt.ylim(0, h)
+    # plt.axis('off')
+    # plt.subplots_adjust(
+    #     left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+    # plt.gca().invert_yaxis()
+    #
+    # #plt.savefig(str(Path(tmpfolder)/imagename.split(os.sep)[-1]))
+    # plt.savefig(os.path.join(tmpfolder,str(Path(imagename).name))) #create file name also on Windows for Unix projects (and vice versa)
+    # plt.close("all")
 
 def boxitintoacell(joints):
     """ Auxiliary function for creating matfile."""
