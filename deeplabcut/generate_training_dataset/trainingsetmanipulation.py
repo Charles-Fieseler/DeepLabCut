@@ -1012,21 +1012,18 @@ def create_training_dataset(
             net_type, Path(dlcparent_path), num_shuffles
         )
 
-
-
-zzzzzzzz
     #print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
-    if trainIndexes is None and testIndexes is None:
-        splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
-                  for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
-    else:
-        if len(trainIndexes) != len(testIndexes) != len(Shuffles):
-            raise ValueError('Number of Shuffles and train and test indexes should be equal.')
-        splits = []
-        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
-            trainFraction = round(len(train_inds) * 1./ (len(train_inds) + len(test_inds)), 2)
-            print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
-            splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
+    # if trainIndexes is None and testIndexes is None:
+    #     splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
+    #               for trainFraction in cfg['TrainingFraction'] for shuffle in Shuffles]
+    # else:
+    #     if len(trainIndexes) != len(testIndexes) != len(Shuffles):
+    #         raise ValueError('Number of Shuffles and train and test indexes should be equal.')
+    #     splits = []
+    #     for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndexes, testIndexes)):
+    #         trainFraction = round(len(train_inds) * 1./ (len(train_inds) + len(test_inds)), 2)
+    #         print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
+    #         splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
 
     # bodyparts = cfg['bodyparts']
     # nbodyparts = len(bodyparts)
@@ -1095,40 +1092,41 @@ zzzzzzzz
     #             "net_type", 'init_weights', 'global_scale', 'location_refinement',
     #             'locref_stdev']
     #
-    #     if Shuffles is None:
-    #         Shuffles = range(1, num_shuffles + 1)
-    #     else:
-    #         Shuffles = [i for i in Shuffles if isinstance(i, int)]
+    
+    if Shuffles is None:
+        Shuffles = range(1, num_shuffles + 1)
+    else:
+        Shuffles = [i for i in Shuffles if isinstance(i, int)]
     #
     #     # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
-    #     if trainIndices is None and testIndices is None:
-    #         splits = [
-    #             (
-    #                 trainFraction,
-    #                 shuffle,
-    #                 SplitTrials(range(len(Data.index)), trainFraction),
-    #             )
-    #             for trainFraction in cfg["TrainingFraction"]
-    #             for shuffle in Shuffles
-    #         ]
-    #     else:
-    #         if len(trainIndices) != len(testIndices) != len(Shuffles):
-    #             raise ValueError(
-    #                 "Number of Shuffles and train and test indexes should be equal."
-    #             )
-    #         splits = []
-    #         for shuffle, (train_inds, test_inds) in enumerate(
-    #             zip(trainIndices, testIndices)
-    #         ):
-    #             trainFraction = round(
-    #                 len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
-    #             )
-    #             print(
-    #                 f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
-    #             )
-    #             splits.append(
-    #                 (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
-    #             )
+    if trainIndices is None and testIndices is None:
+        splits = [
+            (
+                trainFraction,
+                shuffle,
+                SplitTrials(range(len(Data.index)), trainFraction),
+            )
+            for trainFraction in cfg["TrainingFraction"]
+            for shuffle in Shuffles
+        ]
+    else:
+        if len(trainIndices) != len(testIndices) != len(Shuffles):
+            raise ValueError(
+                "Number of Shuffles and train and test indexes should be equal."
+            )
+        splits = []
+        for shuffle, (train_inds, test_inds) in enumerate(
+            zip(trainIndices, testIndices)
+        ):
+            trainFraction = round(
+                len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
+            )
+            print(
+                f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
+            )
+            splits.append(
+                (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
+            )
 
     bodyparts = cfg["bodyparts"]
     nbodyparts = len(bodyparts)
