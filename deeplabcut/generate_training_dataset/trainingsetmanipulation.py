@@ -1012,6 +1012,9 @@ def create_training_dataset(
             net_type, Path(dlcparent_path), num_shuffles
         )
 
+
+
+zzzzzzzz
     #print(trainIndexes,testIndexes, Shuffles, augmenter_type,net_type)
     if trainIndexes is None and testIndexes is None:
         splits = [(trainFraction, shuffle, SplitTrials(range(len(Data.index)), trainFraction))
@@ -1025,56 +1028,204 @@ def create_training_dataset(
             print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
             splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
 
-    bodyparts = cfg['bodyparts']
+    # bodyparts = cfg['bodyparts']
+    # nbodyparts = len(bodyparts)
+    # for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
+    #     if len(trainIndexes)>0:
+    #         if userfeedback:
+    #             trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
+    #             if trainposeconfigfile.is_file():
+    #                 askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
+    #                 if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
+    #                     raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
+    #
+    #         ####################################################
+    #         # Generating data structure with labeled information & frame metadata (for deep cut)
+    #         ####################################################
+    #         # Make training file!
+    #         datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
+    #                                                                                         trainFraction, shuffle, cfg)
+    #
+    #         ################################################################################
+    #         # Saving data file (convert to training file for deeper cut (*.mat))
+    #         ################################################################################
+    #         # Charlie addition: check for 3d training data
+    #         using_z_slices = cfg['using_z_slices']
+    #         #using_z_slices = cfg.get('using_z_slices', False)
+    #         if not using_z_slices:
+    #             # default
+    #             data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+    #         else:
+    #             print("Recognized zslice training data; using custom function")
+    #             data, MatlabData = format_training_data_slices(Data, trainIndexes, nbodyparts, project_path)
+    #         sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
+    #
+    #         ################################################################################
+    #         # Saving metadata (Pickle file)
+    #         ################################################################################
+    #         auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
+    #
+    #         ################################################################################
+    #         # Creating file structure for training &
+    #         # Test files as well as pose_yaml files (containing training and testing information)
+    #         #################################################################################
+    #         modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
+    #         auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
+    #         auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/train')
+    #         auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/test')
+    #
+    #         path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
+    #         path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
+    #         #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
+    #
+    #         items2change = {
+    #             "dataset": datafilename,
+    #             "metadataset": metadatafilename,
+    #             "num_joints": len(bodyparts),
+    #             "all_joints": [[i] for i in range(len(bodyparts))],
+    #             "all_joints_names": [str(bpt) for bpt in bodyparts],
+    #             "init_weights": model_path,
+    #             "project_path": str(cfg['project_path']),
+    #             "net_type": net_type,
+    #             "dataset_type": augmenter_type,
+    #         }
+    #         trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
+    #         keys2save = [
+    #             "dataset", "num_joints", "all_joints", "all_joints_names",
+    #             "net_type", 'init_weights', 'global_scale', 'location_refinement',
+    #             'locref_stdev']
+    #
+    #     if Shuffles is None:
+    #         Shuffles = range(1, num_shuffles + 1)
+    #     else:
+    #         Shuffles = [i for i in Shuffles if isinstance(i, int)]
+    #
+    #     # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
+    #     if trainIndices is None and testIndices is None:
+    #         splits = [
+    #             (
+    #                 trainFraction,
+    #                 shuffle,
+    #                 SplitTrials(range(len(Data.index)), trainFraction),
+    #             )
+    #             for trainFraction in cfg["TrainingFraction"]
+    #             for shuffle in Shuffles
+    #         ]
+    #     else:
+    #         if len(trainIndices) != len(testIndices) != len(Shuffles):
+    #             raise ValueError(
+    #                 "Number of Shuffles and train and test indexes should be equal."
+    #             )
+    #         splits = []
+    #         for shuffle, (train_inds, test_inds) in enumerate(
+    #             zip(trainIndices, testIndices)
+    #         ):
+    #             trainFraction = round(
+    #                 len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
+    #             )
+    #             print(
+    #                 f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
+    #             )
+    #             splits.append(
+    #                 (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
+    #             )
+
+    bodyparts = cfg["bodyparts"]
     nbodyparts = len(bodyparts)
-    for trainFraction, shuffle, (trainIndexes, testIndexes) in splits:
-        if len(trainIndexes)>0:
+    for trainFraction, shuffle, (trainIndices, testIndices) in splits:
+        if len(trainIndices) > 0:
             if userfeedback:
-                trainposeconfigfile, _, _ = training.return_train_network_path(config, shuffle=shuffle, trainFraction=trainFraction)
+                trainposeconfigfile, _, _ = training.return_train_network_path(
+                    config,
+                    shuffle=shuffle,
+                    trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+                )
                 if trainposeconfigfile.is_file():
-                    askuser=input ("The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): ")
-                    if askuser=='no'or askuser=='No' or askuser=='N' or askuser=='No':
-                        raise Exception("Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details.")
+                    askuser = input(
+                        "The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): "
+                    )
+                    if (
+                        askuser == "no"
+                        or askuser == "No"
+                        or askuser == "N"
+                        or askuser == "No"
+                    ):
+                        raise Exception(
+                            "Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details."
+                        )
 
             ####################################################
             # Generating data structure with labeled information & frame metadata (for deep cut)
             ####################################################
             # Make training file!
-            datafilename, metadatafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(trainingsetfolder,
-                                                                                            trainFraction, shuffle, cfg)
+            (
+                datafilename,
+                metadatafilename,
+            ) = auxiliaryfunctions.GetDataandMetaDataFilenames(
+                trainingsetfolder, trainFraction, shuffle, cfg
+            )
 
             ################################################################################
             # Saving data file (convert to training file for deeper cut (*.mat))
             ################################################################################
             # Charlie addition: check for 3d training data
-            using_z_slices = cfg['using_z_slices']
-            #using_z_slices = cfg.get('using_z_slices', False)
-            if not using_z_slices:
-                # default
-                data, MatlabData = format_training_data(Data, trainIndexes, nbodyparts, project_path)
+            if not cfg['using_z_slices']:
+                data, MatlabData = format_training_data(Data, trainIndices, nbodyparts, project_path)
             else:
-                print("Recognized zslice training data; using custom function")
-                data, MatlabData = format_training_data_slices(Data, trainIndexes, nbodyparts, project_path)
-            sio.savemat(os.path.join(project_path,datafilename), {'dataset': MatlabData})
+                print("Recognized z-slice training data; using custom function")
+                data, MatlabData = format_training_data_slices(Data, trainIndices, nbodyparts, project_path)
+            # data, MatlabData = format_training_data(
+            #     Data, trainIndices, nbodyparts, project_path
+            # )
+            sio.savemat(
+                os.path.join(project_path, datafilename), {"dataset": MatlabData}
+            )
 
             ################################################################################
             # Saving metadata (Pickle file)
             ################################################################################
-            auxiliaryfunctions.SaveMetadata(os.path.join(project_path,metadatafilename),data, trainIndexes, testIndexes, trainFraction)
+            auxiliaryfunctions.SaveMetadata(
+                os.path.join(project_path, metadatafilename),
+                data,
+                trainIndices,
+                testIndices,
+                trainFraction,
+            )
 
             ################################################################################
             # Creating file structure for training &
             # Test files as well as pose_yaml files (containing training and testing information)
             #################################################################################
-            modelfoldername=auxiliaryfunctions.GetModelFolder(trainFraction,shuffle,cfg)
-            auxiliaryfunctions.attempttomakefolder(Path(config).parents[0] / modelfoldername,recursive=True)
-            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/train')
-            auxiliaryfunctions.attempttomakefolder(str(Path(config).parents[0] / modelfoldername)+ '/test')
+            modelfoldername = auxiliaryfunctions.GetModelFolder(
+                trainFraction, shuffle, cfg
+            )
+            auxiliaryfunctions.attempttomakefolder(
+                Path(config).parents[0] / modelfoldername, recursive=True
+            )
+            auxiliaryfunctions.attempttomakefolder(
+                str(Path(config).parents[0] / modelfoldername) + "/train"
+            )
+            auxiliaryfunctions.attempttomakefolder(
+                str(Path(config).parents[0] / modelfoldername) + "/test"
+            )
 
-            path_train_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'train','pose_cfg.yaml'))
-            path_test_config = str(os.path.join(cfg['project_path'],Path(modelfoldername),'test','pose_cfg.yaml'))
-            #str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-
+            path_train_config = str(
+                os.path.join(
+                    cfg["project_path"],
+                    Path(modelfoldername),
+                    "train",
+                    "pose_cfg.yaml",
+                )
+            )
+            path_test_config = str(
+                os.path.join(
+                    cfg["project_path"],
+                    Path(modelfoldername),
+                    "test",
+                    "pose_cfg.yaml",
+                )
+            )
+            # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
             items2change = {
                 "dataset": datafilename,
                 "metadataset": metadatafilename,
@@ -1082,171 +1233,29 @@ def create_training_dataset(
                 "all_joints": [[i] for i in range(len(bodyparts))],
                 "all_joints_names": [str(bpt) for bpt in bodyparts],
                 "init_weights": model_path,
-                "project_path": str(cfg['project_path']),
+                "project_path": str(cfg["project_path"]),
                 "net_type": net_type,
                 "dataset_type": augmenter_type,
             }
-            trainingdata = MakeTrain_pose_yaml(items2change,path_train_config,defaultconfigfile)
+            trainingdata = MakeTrain_pose_yaml(
+                items2change, path_train_config, defaultconfigfile
+            )
             keys2save = [
-                "dataset", "num_joints", "all_joints", "all_joints_names",
-                "net_type", 'init_weights', 'global_scale', 'location_refinement',
-                'locref_stdev']
-
-        if Shuffles is None:
-            Shuffles = range(1, num_shuffles + 1)
-        else:
-            Shuffles = [i for i in Shuffles if isinstance(i, int)]
-
-        # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
-        if trainIndices is None and testIndices is None:
-            splits = [
-                (
-                    trainFraction,
-                    shuffle,
-                    SplitTrials(range(len(Data.index)), trainFraction),
-                )
-                for trainFraction in cfg["TrainingFraction"]
-                for shuffle in Shuffles
+                "dataset",
+                "num_joints",
+                "all_joints",
+                "all_joints_names",
+                "net_type",
+                "init_weights",
+                "global_scale",
+                "location_refinement",
+                "locref_stdev",
             ]
-        else:
-            if len(trainIndices) != len(testIndices) != len(Shuffles):
-                raise ValueError(
-                    "Number of Shuffles and train and test indexes should be equal."
-                )
-            splits = []
-            for shuffle, (train_inds, test_inds) in enumerate(
-                zip(trainIndices, testIndices)
-            ):
-                trainFraction = round(
-                    len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
-                )
-                print(
-                    f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
-                )
-                splits.append(
-                    (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
-                )
-
-        bodyparts = cfg["bodyparts"]
-        nbodyparts = len(bodyparts)
-        for trainFraction, shuffle, (trainIndices, testIndices) in splits:
-            if len(trainIndices) > 0:
-                if userfeedback:
-                    trainposeconfigfile, _, _ = training.return_train_network_path(
-                        config,
-                        shuffle=shuffle,
-                        trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
-                    )
-                    if trainposeconfigfile.is_file():
-                        askuser = input(
-                            "The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): "
-                        )
-                        if (
-                            askuser == "no"
-                            or askuser == "No"
-                            or askuser == "N"
-                            or askuser == "No"
-                        ):
-                            raise Exception(
-                                "Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details."
-                            )
-
-                ####################################################
-                # Generating data structure with labeled information & frame metadata (for deep cut)
-                ####################################################
-                # Make training file!
-                (
-                    datafilename,
-                    metadatafilename,
-                ) = auxiliaryfunctions.GetDataandMetaDataFilenames(
-                    trainingsetfolder, trainFraction, shuffle, cfg
-                )
-
-                ################################################################################
-                # Saving data file (convert to training file for deeper cut (*.mat))
-                ################################################################################
-                data, MatlabData = format_training_data(
-                    Data, trainIndices, nbodyparts, project_path
-                )
-                sio.savemat(
-                    os.path.join(project_path, datafilename), {"dataset": MatlabData}
-                )
-
-                ################################################################################
-                # Saving metadata (Pickle file)
-                ################################################################################
-                auxiliaryfunctions.SaveMetadata(
-                    os.path.join(project_path, metadatafilename),
-                    data,
-                    trainIndices,
-                    testIndices,
-                    trainFraction,
-                )
-
-                ################################################################################
-                # Creating file structure for training &
-                # Test files as well as pose_yaml files (containing training and testing information)
-                #################################################################################
-                modelfoldername = auxiliaryfunctions.GetModelFolder(
-                    trainFraction, shuffle, cfg
-                )
-                auxiliaryfunctions.attempttomakefolder(
-                    Path(config).parents[0] / modelfoldername, recursive=True
-                )
-                auxiliaryfunctions.attempttomakefolder(
-                    str(Path(config).parents[0] / modelfoldername) + "/train"
-                )
-                auxiliaryfunctions.attempttomakefolder(
-                    str(Path(config).parents[0] / modelfoldername) + "/test"
-                )
-
-                path_train_config = str(
-                    os.path.join(
-                        cfg["project_path"],
-                        Path(modelfoldername),
-                        "train",
-                        "pose_cfg.yaml",
-                    )
-                )
-                path_test_config = str(
-                    os.path.join(
-                        cfg["project_path"],
-                        Path(modelfoldername),
-                        "test",
-                        "pose_cfg.yaml",
-                    )
-                )
-                # str(cfg['proj_path']+'/'+Path(modelfoldername) / 'test'  /  'pose_cfg.yaml')
-                items2change = {
-                    "dataset": datafilename,
-                    "metadataset": metadatafilename,
-                    "num_joints": len(bodyparts),
-                    "all_joints": [[i] for i in range(len(bodyparts))],
-                    "all_joints_names": [str(bpt) for bpt in bodyparts],
-                    "init_weights": model_path,
-                    "project_path": str(cfg["project_path"]),
-                    "net_type": net_type,
-                    "dataset_type": augmenter_type,
-                }
-                trainingdata = MakeTrain_pose_yaml(
-                    items2change, path_train_config, defaultconfigfile
-                )
-                keys2save = [
-                    "dataset",
-                    "num_joints",
-                    "all_joints",
-                    "all_joints_names",
-                    "net_type",
-                    "init_weights",
-                    "global_scale",
-                    "location_refinement",
-                    "locref_stdev",
-                ]
-                MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
-                print(
-                    "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
-                )
-        return splits
+            MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
+            print(
+                "The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!"
+            )
+    return splits
 
 
 def get_largestshuffle_index(config):
