@@ -4,6 +4,7 @@ import transformations as trans
 from probreg import bcpd
 from probreg import callbacks
 import copy
+import os
 
 # My imports
 import pandas as pd
@@ -65,8 +66,11 @@ def correspondence_from_transform(tf_param, source, target):
 ##
 ## Initialize
 ##
-target_fname = 'Statistics for mCherry_T000002.ome - Denoised - Hessian - Extended Minima.csv'
-source_fname = 'Statistics for mCherry_T000001.ome - Denoised - Hessian - Extended Minima.csv'
+# template_fname = 'Statistics for mCherry_T00000%d.ome - Denoised - Hessian - Extended Minima.csv'
+# template_fname = os.path.join('img%d_analysis','Statistics for img.csv')
+template_fname = 'Statistics for img%d.csv'
+target_fname = template_fname % 2
+source_fname = template_fname % 1
 
 source, target = prepare_source_and_target_nonrigid_3d(source_fname,
                                                        target_fname,
@@ -97,8 +101,8 @@ def save_indices(indices, fname=None):
         fname = 'test_bcpd_indices.csv'
     df.to_csv(fname, header=False)
 
-# save_indices(indices)
-print("Not saving indices")
+save_indices(indices)
+# print("Not saving indices")
 
 
 
@@ -133,25 +137,27 @@ def save_indices_DLC(indices, centroid_fnames,
         print("No images found; aborting")
         return
     else:
-        print("{} images found".format(len(imlist)))
+        print("{} images found".format(len(imlist)), imlist)
 
     index = np.sort(imlist)
     # print(index)
     print('Working on folder: {}'.format(os.path.split(str(output_path))[-1]))
     print("Note: this does not have the exact DLC format, but is specific to Linux")
     # Note: only works for single-digit indexed images
+
+    # Define output for DLC on cluster
     # subfoldername = 'mCherry_T000001.ome'# TODO
     subfoldername = 'test_100frames.ome'# TODO
     # TODO: hardcode linux filesep
     relativeimagenames=['/'.join(('labeled-data',subfoldername,'img{}.tif'.format(n+1))) for n in range(len(index))]
     # relativeimagenames=[os.path.join('labeled-data',subfoldername,'mCherry_T00000{}.ome.tiff'.format(n)) for n in range(len(index))]
 
+    # Build correctly DLC-formatted dataframe
     for i in range(num_neurons):
         bodypart = 'neuron{}'.format(i)
 
         # Get the index of the neuron in each file
         #   TODO: multiple files
-        # ind_in_files = [i, indices[i]]
         ind_in_files = [i, indices[i][0]]
         print("Tracked neuron from {} (source) to {} (target)".format(ind_in_files[0], ind_in_files[1]))
 
