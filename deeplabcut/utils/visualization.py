@@ -310,6 +310,7 @@ def make_labeled_images_from_dataframe(
             proj_frame = np.max(ic[i], axis=0)
             im.set_array(proj_frame)
             print("Performing max projection from original shape:", ic[i].shape)
+            print("Max of projected data: ", np.max(proj_frame,axis=0), np.max(proj_frame,axis=1))
             print("To new shape:", proj_frame.shape)
         else:
             im.set_array(ic[i])
