@@ -289,14 +289,18 @@ def make_labeled_images_from_dataframe(
         [], [], s=cfg["dotsize"], alpha=cfg["alphavalue"], marker=keypoint
     )
     scat.set_color(colors)
-    xy = df.values.reshape((df.shape[0], -1, 2))
+    # Charlie: only keep xy if annotations are xyz
+    if cfg['using_z_slices']:
+        xy = df.values.reshape((df.shape[0], -1, 3))[:,:,0:2]
+    else:
+        xy = df.values.reshape((df.shape[0], -1, 2))
     segs = xy[:, ind_bones].swapaxes(1, 2)
     coll = LineCollection([], colors=cfg["skeleton_color"], alpha=cfg["alphavalue"])
     ax.add_collection(coll)
 
     for i in trange(len(ic)):
         coords = xy[i]
-        # Do a max projection if 3d
+        # Charlie: Do a max projection if 3d
         if cfg['using_z_slices']:
             im.set_array(np.max(ic[i], axis=0))
         else:
