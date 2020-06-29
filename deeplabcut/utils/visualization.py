@@ -302,7 +302,9 @@ def make_labeled_images_from_dataframe(
         coords = xy[i]
         # Charlie: Do a max projection if 3d
         if cfg['using_z_slices']:
-            im.set_array(np.max(ic[i], axis=0))
+            proj_frame = np.max(ic[i], axis=0)
+            im.set_array(proj_frame)
+            print("Performing max projection from original shape:", ic[i].shape)
         else:
             im.set_array(ic[i])
         if ind_bones:
