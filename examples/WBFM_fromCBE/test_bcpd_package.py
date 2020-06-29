@@ -82,7 +82,7 @@ cbs = [callbacks.Open3dVisualizerCallback(source, target)]
 ## Do BCPD and visualize
 ##
 
-tf_param = bcpd.registration_bcpd(source, target, w=1e-10,
+tf_param = bcpd.registration_bcpd(source, target, w=1e-12,
                                   #gamma=10.0, #lmd=0.2, #k = 1e2,
                                   maxiter=100,
                                   callbacks=cbs)
