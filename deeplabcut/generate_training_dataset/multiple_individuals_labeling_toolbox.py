@@ -711,6 +711,10 @@ class MainFrame(wx.Frame):
                 os.path.join(self.dir, "CollectedData_" + self.scorer + ".h5"),
                 "df_with_missing",
             )
+            # Handle data previously labeled on a different platform
+            sep = "/" if "/" in self.dataFrame.index[0] else "\\"
+            if sep != os.path.sep:
+                self.dataFrame.index = self.dataFrame.index.str.replace(sep, os.path.sep)
             self.dataFrame.sort_index(inplace=True)
             self.prev.Enable(True)
             # Finds the first empty row in the dataframe and sets the iteration to that index
@@ -1192,13 +1196,10 @@ class MainFrame(wx.Frame):
             for bp in self.dataFrame.columns.get_level_values("bodyparts")
         ]
         self.dataFrame = self.dataFrame.loc[:, valid]
-        # Re-organize the dataframe so the CSV looks consistent
-        self.dataFrame.columns = self.dataFrame.columns.sortlevel(
-            level="individuals", sort_remaining=False
-        )[0]
-        self.dataFrame = self.dataFrame.reindex(
-            config_bpts, axis=1, level=self.dataFrame.columns.names.index("bodyparts")
-        )
+        # Re-organize the dataframe so the CSV looks consistent with the config
+        self.dataFrame = (self.dataFrame
+                          .reindex(columns=self.individual_names, level='individuals')
+                          .reindex(columns=config_bpts, level='bodyparts'))
         self.dataFrame.to_csv(
             os.path.join(self.dir, "CollectedData_" + self.scorer + ".csv")
         )
