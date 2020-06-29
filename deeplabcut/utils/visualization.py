@@ -277,6 +277,7 @@ def make_labeled_images_from_dataframe(
         images = images.str.replace(sep, os.path.sep)
     if not destfolder:
         destfolder = os.path.dirname(images[0])
+    print("Debug; reading from files: ", images)
     tmpfolder = destfolder + "_labeled"
     attempttomakefolder(tmpfolder)
     ic = io.imread_collection(images.to_list())
