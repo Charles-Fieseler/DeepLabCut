@@ -120,3 +120,6 @@ ENV/
 # Large data files
 *.tif
 *.tiff
+examples/WormTest-Charlie-2020-05-21/
+examples/WBFM_fromCBE/old_notebooks/
+examples/WBFM_fromCBE/old_images/
