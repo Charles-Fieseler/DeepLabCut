@@ -63,34 +63,6 @@ def correspondence_from_transform(tf_param, source, target):
 
     return indices
 
-##
-## Initialize
-##
-# template_fname = 'Statistics for mCherry_T00000%d.ome - Denoised - Hessian - Extended Minima.csv'
-# template_fname = os.path.join('img%d_analysis','Statistics for img.csv')
-template_fname = 'Statistics for img%d.csv'
-target_fname = template_fname % 2
-source_fname = template_fname % 1
-
-source, target = prepare_source_and_target_nonrigid_3d(source_fname,
-                                                       target_fname,
-                                                       0.005)
-cbs = [callbacks.Open3dVisualizerCallback(source, target)]
-# cbs = []
-
-##
-## Do BCPD and visualize
-##
-
-tf_param = bcpd.registration_bcpd(source, target, w=1e-12,
-                                  #gamma=10.0, #lmd=0.2, #k = 1e2,
-                                  maxiter=100,
-                                  callbacks=cbs)
-# print("Not running BCPD")
-
-# Also print
-indices = correspondence_from_transform(tf_param, source, target)
-# print("Aligned neighbors ", indices)
 
 def save_indices(indices, fname=None):
     """ Saves indices (csv) using a standard format """
@@ -100,15 +72,6 @@ def save_indices(indices, fname=None):
     if fname is None:
         fname = 'test_bcpd_indices.csv'
     df.to_csv(fname, header=False)
-
-save_indices(indices)
-# print("Not saving indices")
-
-
-
-##
-## TODO: directly output in DLC format
-##
 
 import glob
 import os
@@ -179,4 +142,34 @@ def save_indices_DLC(indices, centroid_fnames,
     dataFrame.to_hdf(os.path.join(output_path,"CollectedData_" + scorer + '.h5'),'df_with_missing',format='table', mode='w')
 
 
+
+
+
+##
+## Initialize
+##
+# template_fname = 'Statistics for mCherry_T00000%d.ome - Denoised - Hessian - Extended Minima.csv'
+# template_fname = os.path.join('img%d_analysis','Statistics for img.csv')
+template_fname = 'Statistics for img%d.csv'
+target_fname = template_fname % 2
+source_fname = template_fname % 1
+
+source, target = prepare_source_and_target_nonrigid_3d(source_fname,
+                                                       target_fname,
+                                                       0.005)
+cbs = [callbacks.Open3dVisualizerCallback(source, target)]
+# cbs = []
+
+##
+## Do BCPD and visualize
+##
+tf_param = bcpd.registration_bcpd(source, target, w=1e-12,
+                                  #gamma=10.0, #lmd=0.2, #k = 1e2,
+                                  maxiter=100,
+                                  callbacks=cbs)
+# Also print
+indices = correspondence_from_transform(tf_param, source, target)
+save_indices(indices)
+
+## directly output in DLC format
 save_indices_DLC(indices, [source_fname, target_fname])
