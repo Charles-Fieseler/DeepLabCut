@@ -146,7 +146,7 @@ def save_indices_DLC(indices, centroid_fnames,
 
 
 ##
-## Initialize
+## Initialize and align
 ##
 # template_fname = 'Statistics for mCherry_T00000%d.ome - Denoised - Hessian - Extended Minima.csv'
 # template_fname = os.path.join('img%d_analysis','Statistics for img.csv')
