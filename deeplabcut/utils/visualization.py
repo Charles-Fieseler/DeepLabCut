@@ -297,6 +297,7 @@ def make_labeled_images_from_dataframe(
     # Charlie: only keep xy if annotations are xyz
     if cfg['using_z_slices']:
         xy = df.values.reshape((df.shape[0], -1, 3))[:,:,0:2]
+        im.set_clim(0.0, 1.0) # Is this needed even for 2d? I think so
     else:
         xy = df.values.reshape((df.shape[0], -1, 2))
     segs = xy[:, ind_bones].swapaxes(1, 2)
@@ -308,10 +309,11 @@ def make_labeled_images_from_dataframe(
         # Charlie: Do a max projection if 3d
         if cfg['using_z_slices']:
             proj_frame = np.max(ic[i], axis=0)
+            proj_frame = proj_frame / np.max(np.max(proj_frame))
             im.set_array(proj_frame)
-            print("Performing max projection from original shape:", ic[i].shape)
-            print("Max of projected data: ", np.max(proj_frame,axis=0), np.max(proj_frame,axis=1))
-            print("To new shape:", proj_frame.shape)
+#             print("Performing max projection from original shape:", ic[i].shape)
+#             print("Max of projected data: ", np.max(im.get_array(),axis=0), np.max(im.get_array(),axis=1))
+#             print("To new shape:", proj_frame.shape)
         else:
             im.set_array(ic[i])
         if ind_bones:
