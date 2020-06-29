@@ -281,7 +281,11 @@ def make_labeled_images_from_dataframe(
     attempttomakefolder(tmpfolder)
     ic = io.imread_collection(images.to_list())
 
-    h, w = ic[0].shape[:2]
+    # Charlie: if z_slices, format is zxy
+    if cfg['using_z_slices']:
+        h, w = ic[0].shape[1:3]
+    else:
+        h, w = ic[0].shape[:2]
     fig, ax = prepare_figure_axes(w, h, scale, dpi)
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     im = ax.imshow(np.zeros((h, w)), "gray")
