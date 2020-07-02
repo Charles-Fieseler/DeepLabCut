@@ -21,14 +21,14 @@ net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_152': resnet_v1.resnet_v1_152}
 
 def prediction_layer(cfg, input, name, num_outputs):
-    # Update to 3d... nevermind, back to 2d
-    with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], padding='SAME',
+    # Update to 3d
+    with slim.arg_scope([slim.conv3d, slim.conv3d_transpose], padding='SAME',
                         activation_fn=None, normalizer_fn=None,
                         weights_regularizer=slim.l2_regularizer(cfg.weight_decay)):
         with tf.variable_scope(name):
-            # Update to 3d... nevermind, back to 2d
-            pred = slim.conv2d_transpose(input, num_outputs,
-                                         kernel_size=[3, 3], stride=cfg.deconvolutionstride,
+            # Update to 3d
+            pred = slim.convd_transpose(input, num_outputs,
+                                         kernel_size=[3, 3, 3], stride=cfg.deconvolutionstride,
                                          scope='block4')
             return pred
 
