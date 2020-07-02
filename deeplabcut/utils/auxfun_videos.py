@@ -11,13 +11,23 @@ Licensed under GNU Lesser General Public License v3.0
 import os
 import subprocess
 from pathlib import Path
+import tifffile
 
 import cv2
 
 
 # Historically DLC used: from scipy.misc import imread, imresize >> deprecated functions
 def imread(path, mode=None):
-    return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+    if '.tif' in path:
+        # From: https://stackoverflow.com/questions/50260321/applying-cv2-grayscale-to-a-numpy-4d-array
+        gray_stack = tifffile.imread(path)
+        sz = gray_stack.shape + (3, ) # Manually add the color channel
+        color_stack = np.zeros(sz)
+        for i in range(sz[0]):
+            color_stack[i,:,:,:] = cv2.cvtColor(img_stack[i], cv2.COLOR_GRAY2GRAY)
+        return color_stack
+    else:
+        return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
