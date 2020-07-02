@@ -33,7 +33,10 @@ def imread(path, mode=None):
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
 def imresize(img, size=1.0, interpolationmethod=cv2.INTER_AREA):
-    if size != 1.0:
+    if len(np.shape(img)) > 3:
+        print("4 dimensions detected; resizing not supported yet")
+        return img
+    elif size != 1.0:
         return cv2.resize(
             img, None, fx=size, fy=size, interpolation=interpolationmethod
         )  # (int(height*size),int(width*size)))
