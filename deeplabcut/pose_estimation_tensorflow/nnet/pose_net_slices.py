@@ -32,6 +32,23 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          scope='block4')
             return pred
 
+def compress_depth(img5d):
+    """
+    Go from 5d image to 4d, appropriate for pretrained networks
+    Input shape: NDHWC = (batch, depth, height, width, color)
+    Output shape: NHWC
+    """
+
+    # Swap dimensions to make depth last
+    tf.transpose(img5d, perm=[0,2,3,4,1])
+    # Use Dense layer to squish depth
+    img4d = slim.fully_connected(img5d, 1)
+    # Actually remove the dimension
+    tf.squeeze(img4d, axis=4)
+
+    return img4d
+
+
 class PoseNetSlices:
     def __init__(self, cfg):
         self.cfg = cfg
@@ -47,6 +64,9 @@ class PoseNetSlices:
         mean = tf.constant(self.cfg.mean_pixel,
                            dtype=tf.float32, shape=[1, 1, 1, 1, 3], name='img_mean')
         im_centered = inputs - mean
+
+        # Charlie addition
+        im_centered = compress_depth(im_centered)
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
