@@ -35,6 +35,7 @@ def prediction_layer(cfg, input, name, num_outputs):
 class PoseNetSlices:
     def __init__(self, cfg):
         self.cfg = cfg
+        print("Creating new class for use with z-slice data, PoseNetSlices")
         if 'output_stride' not in self.cfg.keys():
             self.cfg.output_stride=16
         if 'deconvolutionstride' not in self.cfg.keys():
