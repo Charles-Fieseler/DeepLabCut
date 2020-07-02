@@ -25,7 +25,7 @@ def imread(path, mode=None):
         sz = gray_stack.shape + (3, ) # Manually add the color channel
         color_stack = np.zeros(sz)
         for i in range(sz[0]):
-            color_stack[i,:,:,:] = cv2.cvtColor(gray_stack[i], cv2.COLOR_GRAY2GRAY)
+            color_stack[i,:,:,:] = cv2.cvtColor(gray_stack[i], cv2.COLOR_GRAY2RGB)
         return color_stack
     else:
         return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
