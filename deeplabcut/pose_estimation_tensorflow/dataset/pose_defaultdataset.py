@@ -202,7 +202,7 @@ class PoseDataset:
                 pass  # no cropping!
 
         # Charlie addition
-        if not self.cfg.using_z_slices:
+        if not self.cfg['using_z_slices']:
             img = imresize(image, scale) if scale != 1 else image
             scaled_img_size = arr(img.shape[0:2])
         else:
