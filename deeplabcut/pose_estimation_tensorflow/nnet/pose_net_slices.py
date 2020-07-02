@@ -84,27 +84,33 @@ class PoseNetSlices:
 
     def extract_features(self, inputs):
         net_fun = net_funcs[self.cfg.net_type]
+
+        depth_dim = tf.constant(inputs.shape[1])
         # Update to be a mean throughout the volume
         mean = tf.constant(self.cfg.mean_pixel,
                            dtype=tf.float32, shape=[1, 1, 1, 1, 3], name='img_mean')
-        im_centered = inputs - mean
+        im_centered5d = inputs - mean
 
         # Charlie addition
-        im_centered = compress_depth(im_centered)
+        im_centered4d = compress_depth(im_centered5d)
+        #
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
         vers = vers.split(".") #Updated based on https://github.com/AlexEMG/DeepLabCut/issues/44
         if int(vers[0])==1 and int(vers[1])<4: #check if lower than version 1.4.
             with slim.arg_scope(resnet_v1.resnet_arg_scope(False)):
-                net, end_points = net_fun(im_centered,
+                net, end_points4d = net_fun(im_centered4d,
                                           global_pool=False, output_stride=self.cfg.output_stride)
         else:
             with slim.arg_scope(resnet_v1.resnet_arg_scope()):
-                net, end_points = net_fun(im_centered,
+                net, end_points4d = net_fun(im_centered4d,
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
-        return net,end_points
+        # Charlie addition: expand back to 5d
+        end_points5d = expand_depth(end_points4d, depth_dim)
+
+        return net,end_points5d
 
     def prediction_layers(self, features, end_points, reuse=None):
         cfg = self.cfg
