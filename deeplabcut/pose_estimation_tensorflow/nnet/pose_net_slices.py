@@ -37,16 +37,40 @@ def compress_depth(img5d):
     Go from 5d image to 4d, appropriate for pretrained networks
     Input shape: NDHWC = (batch, depth, height, width, color)
     Output shape: NHWC
+
+    See also: expand_depth
     """
 
+    # Contract using einstein summation
+    weights = slim.model_variable('weights_compress',
+                                  shape=[img5d.shape[1]])
+    img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
     # Swap dimensions to make depth last
-    tf.transpose(img5d, perm=[0,2,3,4,1])
-    # Use Dense layer to squish depth
-    img4d = slim.fully_connected(img5d, 1)
-    # Actually remove the dimension
-    tf.squeeze(img4d, axis=4)
+    # tf.transpose(img5d, perm=[0,2,3,4,1])
+    # # Use Dense layer to squish depth
+    # img4d = slim.fully_connected(img5d, 1)
+    # # Actually remove the dimension
+    # tf.squeeze(img4d, axis=4)
 
     return img4d
+
+
+def expand_depth(img4d, depth_dim):
+    """
+    Go from 4d image to 5d, using the output from a pretrained resnet
+    Input shape: NHWC = (batch, height, width, color)
+        Note: must pass depth_dim, the new dimension
+    Output shape: NDHWC
+
+    See also: compress_depth
+    """
+
+    # Contract using einstein summation
+    weights = slim.model_variable('weights_compress',
+                                  shape=[depth_dim])
+    img4d = tf.einsum('iklm,j->ijklm', img5d, weights)
+
+    return img5d
 
 
 class PoseNetSlices:
