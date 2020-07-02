@@ -201,8 +201,13 @@ class PoseDataset:
             else:
                 pass  # no cropping!
 
-        img = imresize(image, scale) if scale != 1 else image
-        scaled_img_size = arr(img.shape[0:2])
+        # Charlie addition
+        if not self.cfg.using_z_slices:
+            img = imresize(image, scale) if scale != 1 else image
+            scaled_img_size = arr(img.shape[0:2])
+        else:
+            img = imresize(image, scale) if scale < 1 else image
+            scaled_img_size = arr(img.shape[0:3])
         if mirror:
             img = np.fliplr(img)
 
