@@ -12,6 +12,7 @@ import os
 import subprocess
 from pathlib import Path
 import tifffile
+import numpy as np
 
 import cv2
 
