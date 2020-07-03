@@ -23,13 +23,13 @@ net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
 
 def prediction_layer(cfg, input, name, num_outputs, shape_5d):
     # Update to 3d
-    with slim.arg_scope([slim.conv3d, slim.conv3d_transpose], padding='SAME',
+    with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], padding='SAME',
                         activation_fn=None, normalizer_fn=None,
                         weights_regularizer=slim.l2_regularizer(cfg.weight_decay)):
         with tf.variable_scope(name):
             # Update to 3d
-            pred4d = slim.convd_transpose(input, num_outputs,
-                                         kernel_size=[3, 3, 3], stride=cfg.deconvolutionstride,
+            pred4d = slim.conv2d_transpose(input, num_outputs,
+                                         kernel_size=[3, 3], stride=cfg.deconvolutionstride,
                                          scope='block4')
 
             # Charlie addition: expand back to 5d
