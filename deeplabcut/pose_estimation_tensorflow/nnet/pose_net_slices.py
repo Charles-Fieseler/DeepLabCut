@@ -80,9 +80,11 @@ def expand_depth(end_points4d, shape_5d):
     See also: compress_depth
     """
 
-    end_points5d = {}
-    for k, p in end_points4d.items():
-        end_points5d[k] = tf.reshape(p, shape_5d)
+    print(type(end_points4d))
+    end_points5d = tf.reshape(end_points4d, shape_5d)
+    # end_points5d = {}
+    # for k, p in end_points4d.items():
+    #     end_points5d[k] = tf.reshape(p, shape_5d)
 
     # Contract using einstein summation
     # with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
