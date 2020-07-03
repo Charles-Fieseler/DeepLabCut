@@ -266,55 +266,55 @@ class PoseDataset:
         return batch
 
 
-def compute_target_part_scoremap_slices(self, joint_id, coords, data_item, size, scale):
-    dist_thresh = self.cfg.pos_dist_thresh * scale
-    dist_thresh_sq = dist_thresh ** 2
-    num_joints = self.cfg.num_joints
+    def compute_target_part_scoremap_slices(self, joint_id, coords, data_item, size, scale):
+        dist_thresh = self.cfg.pos_dist_thresh * scale
+        dist_thresh_sq = dist_thresh ** 2
+        num_joints = self.cfg.num_joints
 
-    scmap = np.zeros(cat([size, arr([num_joints])]))
-    locref_size = cat([size, arr([num_joints * 2])])
-    locref_mask = np.zeros(locref_size)
-    locref_map = np.zeros(locref_size)
-    width = size[2] # new
-    height = size[1] # new
+        scmap = np.zeros(cat([size, arr([num_joints])]))
+        locref_size = cat([size, arr([num_joints * 2])])
+        locref_mask = np.zeros(locref_size)
+        locref_map = np.zeros(locref_size)
+        width = size[2] # new
+        height = size[1] # new
 
-    for person_id in range(len(coords)):
-        for k, j_id in enumerate(joint_id[person_id]):
-            joint_pt = coords[person_id][k, :]
-            j_x = np.asscalar(joint_pt[1]) # new
-            j_y = np.asscalar(joint_pt[2]) # new
-            j_z = int(joint_pt[0]) # new; not affected by stride or distance
+        for person_id in range(len(coords)):
+            for k, j_id in enumerate(joint_id[person_id]):
+                joint_pt = coords[person_id][k, :]
+                j_x = np.asscalar(joint_pt[1]) # new
+                j_y = np.asscalar(joint_pt[2]) # new
+                j_z = int(joint_pt[0]) # new; not affected by stride or distance
 
-            # don't loop over entire heatmap, but just relevant locations
-            j_x_sm = round((j_x - self.half_stride) / self.stride)
-            j_y_sm = round((j_y - self.half_stride) / self.stride)
-            min_x = round(max(j_x_sm - dist_thresh - 1, 0))
-            max_x = round(min(j_x_sm + dist_thresh + 1, width - 1))
-            min_y = round(max(j_y_sm - dist_thresh - 1, 0))
-            max_y = round(min(j_y_sm + dist_thresh + 1, height - 1))
+                # don't loop over entire heatmap, but just relevant locations
+                j_x_sm = round((j_x - self.half_stride) / self.stride)
+                j_y_sm = round((j_y - self.half_stride) / self.stride)
+                min_x = round(max(j_x_sm - dist_thresh - 1, 0))
+                max_x = round(min(j_x_sm + dist_thresh + 1, width - 1))
+                min_y = round(max(j_y_sm - dist_thresh - 1, 0))
+                max_y = round(min(j_y_sm + dist_thresh + 1, height - 1))
 
-            for j in range(min_y, max_y + 1):  # range(height):
-                pt_y = j * self.stride + self.half_stride
-                for i in range(min_x, max_x + 1):  # range(width):
-                    # pt = arr([i*stride+half_stride, j*stride+half_stride])
-                    # diff = joint_pt - pt
-                    # The code above is too slow in python
-                    pt_x = i * self.stride + self.half_stride
-                    dx = j_x - pt_x
-                    dy = j_y - pt_y
-                    dist = dx ** 2 + dy ** 2
-                    # print(la.norm(diff))
-                    if dist <= dist_thresh_sq:
-                        # New index: z, which is not iterated
-                        scmap[j_z, j, i, j_id] = 1
-                        locref_mask[j_z, j, i, j_id * 2 + 0] = 1
-                        locref_mask[j_z, j, i, j_id * 2 + 1] = 1
-                        locref_map[j_z, j, i, j_id * 2 + 0] = dx * self.locref_scale
-                        locref_map[j_z, j, i, j_id * 2 + 1] = dy * self.locref_scale
+                for j in range(min_y, max_y + 1):  # range(height):
+                    pt_y = j * self.stride + self.half_stride
+                    for i in range(min_x, max_x + 1):  # range(width):
+                        # pt = arr([i*stride+half_stride, j*stride+half_stride])
+                        # diff = joint_pt - pt
+                        # The code above is too slow in python
+                        pt_x = i * self.stride + self.half_stride
+                        dx = j_x - pt_x
+                        dy = j_y - pt_y
+                        dist = dx ** 2 + dy ** 2
+                        # print(la.norm(diff))
+                        if dist <= dist_thresh_sq:
+                            # New index: z, which is not iterated
+                            scmap[j_z, j, i, j_id] = 1
+                            locref_mask[j_z, j, i, j_id * 2 + 0] = 1
+                            locref_mask[j_z, j, i, j_id * 2 + 1] = 1
+                            locref_map[j_z, j, i, j_id * 2 + 0] = dx * self.locref_scale
+                            locref_map[j_z, j, i, j_id * 2 + 1] = dy * self.locref_scale
 
-    weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
+        weights = self.compute_scmap_weights(scmap.shape, joint_id, data_item)
 
-    return scmap, weights, locref_map, locref_mask
+        return scmap, weights, locref_map, locref_mask
 
 
 
