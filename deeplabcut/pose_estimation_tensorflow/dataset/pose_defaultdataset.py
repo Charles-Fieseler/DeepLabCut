@@ -281,14 +281,16 @@ class PoseDataset:
         locref_map = np.zeros(locref_size)
         width = size[2] # new
         height = size[1] # new
+        print("Size: ", size)
 
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
                 print(joint_pt)
-                j_x = np.asscalar(joint_pt[1]) # new
-                j_y = np.asscalar(joint_pt[2]) # new
-                j_z = int(joint_pt[0]) # new; not affected by stride or distance
+                j_x = np.asscalar(joint_pt[0])
+                j_y = np.asscalar(joint_pt[1])
+                # Note: the annotations are XYZ, but the masks are DHW=ZXY
+                j_z = int(joint_pt[2]) # new; not affected by stride or distance
 
                 # don't loop over entire heatmap, but just relevant locations
                 j_x_sm = round((j_x - self.half_stride) / self.stride)
