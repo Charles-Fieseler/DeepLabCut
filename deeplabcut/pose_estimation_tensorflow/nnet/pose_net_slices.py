@@ -64,7 +64,7 @@ def expand_depth(end_points4d, shape_5d):
     See also: compress_depth
     """
 
-    print(type(end_points4d))
+    # print(type(end_points4d))
     end_points5d = tf.reshape(end_points4d, shape_5d)
     # end_points5d = {}
     # for k, p in end_points4d.items():
@@ -225,9 +225,9 @@ class PoseNetSlices:
         part_score_weights = batch[Batch.part_score_weights] if weigh_part_predictions else 1.0
 
         def add_part_loss(pred_layer):
-            print(batch[Batch.part_score_targets])
-            print(heads[pred_layer])
-            print(part_score_weights)
+            print("Batch", batch[Batch.part_score_targets])
+            print("heads ", heads[pred_layer])
+            print("part_score_weights", part_score_weights)
             return tf.losses.sigmoid_cross_entropy(batch[Batch.part_score_targets],
                                                    heads[pred_layer],
                                                    part_score_weights)
