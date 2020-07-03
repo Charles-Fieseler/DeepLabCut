@@ -221,6 +221,7 @@ class PoseNetSlices:
     def train(self, batch):
         cfg = self.cfg
 
+        print("Input sizes")
         heads = self.get_net(batch[Batch.inputs])
         print("START OF HEAD SIZES")
         [print("Head entries ", heads[h].shape) for h in heads]

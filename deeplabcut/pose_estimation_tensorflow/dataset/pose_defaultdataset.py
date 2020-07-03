@@ -229,7 +229,9 @@ class PoseDataset:
             # print("Input size: ", scaled_img_size)
             # print("Stride: ", stride)
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
-            # print("Calculated intermediate size: ", sm_size)
+            if self.cfg.using_z_slices:
+                sm_size[0] = scaled_img_size[0] # z should not be "strided"
+            print("Calculated intermediate size: ", sm_size)
 
             scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
 
