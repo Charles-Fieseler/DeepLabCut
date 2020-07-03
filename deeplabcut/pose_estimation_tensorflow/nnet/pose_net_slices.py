@@ -73,7 +73,7 @@ def expand_depth(end_points4d, block_size):
                                       end_points4d_ch_first)
     # Output should be: (batch, X, Y, Z, joints)
     end_points5d = tf.expand_dims(
-                    tf.transpose(end_points5d_ch_first, perm=[1,2,3,0])
+                    tf.transpose(end_points5d_ch_first, perm=[1,2,3,0]),
                     axis=0 # i.e. the batch dimension
                     )
     # end_points5d = tf.reshape(end_points4d, shape_5d)
