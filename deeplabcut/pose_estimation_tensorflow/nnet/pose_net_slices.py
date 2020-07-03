@@ -15,6 +15,7 @@ import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim.nets import resnet_v1
 from deeplabcut.pose_estimation_tensorflow.dataset.pose_dataset import Batch
 from deeplabcut.pose_estimation_tensorflow.nnet import losses
+import numpy as np
 
 net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_101': resnet_v1.resnet_v1_101,
@@ -102,7 +103,7 @@ class PoseNetSlices:
 
         # Charlie addition
         depth_dim = self.cfg.num_z_slices
-        block_size = int(sqrt(depth_dim))
+        block_size = int(np.sqrt(depth_dim))
         im_centered4d = compress_depth(im_centered5d, block_size)
 
         # The next part of the code depends upon which tensorflow version you have.
