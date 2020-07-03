@@ -67,16 +67,14 @@ def expand_depth(end_points4d, block_size):
     # tf.print("Block size: ", block_size)
     # map_fn needs channels to be first; currently 3
     # space_to_depth needs depth to be last; this will be expanded
-    print("BATCH MUST BE 1")
     end_points4d_ch_first = tf.expand_dims(
                             tf.transpose(end_points4d, perm=[3,0,1,2]),
                             axis=-1)
     end_points5d_ch_first = tf.map_fn(lambda x: tf.space_to_depth(x,block_size),
                                       end_points4d_ch_first)
-    # Output should be: (batch, X, Y, Z, joints)
+    # Output should be: (batch, Z, X, Y, joints)
     #   Only need to move channels back to the end
-    end_points5d = tf.transpose(end_points5d_ch_first, perm=[1,2,3,4,0])
-    # end_points5d = tf.reshape(end_points4d, shape_5d)
+    end_points5d = tf.transpose(end_points5d_ch_first, perm=[1,4,2,3,0])
 
     return end_points5d
 
