@@ -104,8 +104,8 @@ class PoseNetSlices:
         shape_4d = [1, h*block_size, w*block_size, 3]
         shape_5d = [1, depth_size, h, w, -1] # No longer color
 
-        print("Input shape: ", shape_5d)
-        print("Resnet analysis reshaping: ", shape_4d)
+        # print("Input shape: ", shape_5d)
+        # print("Resnet analysis reshaping: ", shape_4d)
         im_centered4d = compress_depth(im_centered5d, depth_size, shape_4d)
 
         # The next part of the code depends upon which tensorflow version you have.
@@ -221,10 +221,10 @@ class PoseNetSlices:
     def train(self, batch):
         cfg = self.cfg
 
-        print("Input sizes")
+        # print("Input sizes: ", batch[Batch.inputs])
         heads = self.get_net(batch[Batch.inputs])
-        print("START OF HEAD SIZES")
-        [print("Head entries ", heads[h].shape) for h in heads]
+        # print("START OF HEAD SIZES")
+        # [print("Head entries ", heads[h].shape) for h in heads]
 
         weigh_part_predictions = cfg.weigh_part_predictions
         part_score_weights = batch[Batch.part_score_weights] if weigh_part_predictions else 1.0
