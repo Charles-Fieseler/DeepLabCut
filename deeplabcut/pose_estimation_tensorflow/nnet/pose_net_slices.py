@@ -116,12 +116,12 @@ class PoseNetSlices:
         block_size = int(np.sqrt(depth_dim))
         depth_size = block_size**2 # Truncated depth
 
-        num_classes = len(self.cfg.all_joints)
+        # num_classes = len(self.cfg.all_joints)
 
         h = tf.shape(im_centered5d)[2]
         w = tf.shape(im_centered5d)[3]
         shape_4d = [1, h*block_size, w*block_size, 3]
-        shape_5d = [1, depth_size, h, w, num_classes] # No longer color 
+        shape_5d = [1, depth_size, h, w, -1] # No longer color
 
         print("Input shape: ", shape_5d)
         print("Resnet analysis reshaping: ", shape_4d)
