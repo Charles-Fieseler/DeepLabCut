@@ -180,8 +180,8 @@ class PoseDataset:
         # print(im_file, os.getcwd())
         # print(self.cfg.project_path)
         image = imread(os.path.join(self.cfg.project_path, im_file), mode="RGB")
-        print("Shape of read image: ", image.shape)
-        print("Image filename: ", imfile)
+        # print("Shape of read image: ", image.shape)
+        # print("Image filename: ", imfile)
 
         if self.has_gt:
             joints = np.copy(data_item.joints)
@@ -227,6 +227,7 @@ class PoseDataset:
                 ]
 
             print("Input size: ", scaled_img_size)
+            print("Stride: ", stride)
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
             print("Calculated intermediate size: ", sm_size)
 
