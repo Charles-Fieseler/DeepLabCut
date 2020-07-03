@@ -223,7 +223,7 @@ class PoseNetSlices:
 
         heads = self.get_net(batch[Batch.inputs])
         print("START OF HEAD SIZES")
-        [print("Head entries ", h) for h in heads]
+        [print("Head entries ", heads[h].shape) for h in heads]
 
         weigh_part_predictions = cfg.weigh_part_predictions
         part_score_weights = batch[Batch.part_score_weights] if weigh_part_predictions else 1.0
