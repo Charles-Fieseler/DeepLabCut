@@ -109,9 +109,9 @@ class PoseNetSlices:
         depth_dim = self.cfg.num_z_slices # Full depth
         block_size = int(np.sqrt(depth_dim))
         depth_size = block_size**2 # Truncated depth
-        shape_5d = tf.shape(img5d[:,0:depth_size])[2]
+        shape_5d = tf.shape(im_centered5d[:,0:depth_size])[2]
 
-        h, w = tf.shape(img5d)[2:3]
+        h, w = tf.shape(im_centered5d)[2:3]
         shape_4d = [1, h*block_size, w*block_size, 3]
 
         im_centered4d = compress_depth(im_centered5d, depth_size, shape_4d)
