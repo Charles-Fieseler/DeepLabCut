@@ -85,7 +85,7 @@ class PoseNetSlices:
     def extract_features(self, inputs):
         net_fun = net_funcs[self.cfg.net_type]
 
-        depth_dim = tf.shape(inputs)[1]
+        depth_dim = tf.shape(inputs)[1].value
         # Update to be a mean throughout the volume
         mean = tf.constant(self.cfg.mean_pixel,
                            dtype=tf.float32, shape=[1, 1, 1, 1, 3], name='img_mean')
@@ -93,7 +93,6 @@ class PoseNetSlices:
 
         # Charlie addition
         im_centered4d = compress_depth(im_centered5d, depth_dim)
-        #
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
