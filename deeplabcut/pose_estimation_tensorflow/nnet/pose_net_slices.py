@@ -60,22 +60,27 @@ def compress_depth(img5d, block_size):
     return img4d
 
 
-def expand_depth(img4d, depth_dim):
+def expand_depth(end_points4d, block_size):
     """
     Go from 4d image to 5d, using the output from a pretrained resnet
-    Input shape: NHWC = (batch, height, width, color)
-        Note: must pass depth_dim, the new dimension
+        Uses tf.space_to_depth, and thus produces very large tiled pictures
+    Input: dictionary of predictions
+        Input shape: NHWC = (batch, height, width, color)
+        Note: must pass block_size, the same as compression
     Output shape: NDHWC
 
     See also: compress_depth
     """
+    end_points5d = {}
+    for k, p in end_points4d.items():
+        end_points5d[k] = tf.nn.depth_to_space(p, block_size)
 
     # Contract using einstein summation
-    with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
-        weights = tf.get_variable('weights_expand', shape=[depth_dim])
-        img5d = tf.einsum('iklm,j->ijklm', img4d, weights)
+    # with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
+    #     weights = tf.get_variable('weights_expand', shape=[depth_dim])
+    #     img5d = tf.einsum('iklm,j->ijklm', img4d, weights)
 
-    return img5d
+    return end_points5d
 
 
 class PoseNetSlices:
@@ -113,7 +118,8 @@ class PoseNetSlices:
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
         # Charlie addition: expand back to 5d
-        end_points5d = expand_depth(end_points4d, depth_dim)
+        print(type(end_points4d))
+        end_points5d = expand_depth(end_points4d, block_size)
 
         return net,end_points5d
 
