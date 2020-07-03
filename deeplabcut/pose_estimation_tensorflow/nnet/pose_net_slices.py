@@ -45,8 +45,8 @@ def compress_depth(img5d, block_size):
     """
     # No training version: just tile
     depth_size = block_size**2
-    img4d = tf.nn.depth_to_space(img5d[:,0:depth_size,...],
-                                 block_size, name='compress')
+    img4d = tf.nn.space_to_depth(img5d[:,0:depth_size,...],
+                                 block_size, name='expand')
     # Contract using einstein summation
     # with tf.variable_scope('compress', reuse=tf.AUTO_REUSE):
     #     weights = tf.get_variable('weights_compress', shape=[depth_dim])
@@ -74,7 +74,7 @@ def expand_depth(end_points4d, block_size):
     """
     end_points5d = {}
     for k, p in end_points4d.items():
-        end_points5d[k] = tf.nn.depth_to_space(p, block_size)
+        end_points5d[k] = tf.nn.depth_to_space(p, block_size, name='expand')
 
     # Contract using einstein summation
     # with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
