@@ -65,7 +65,7 @@ def expand_depth(end_points4d, shape_5d):
     """
 
     # print(type(end_points4d))
-    tf.print("Shape of end_points4d: ", end_points4d.shape())
+    tf.print("Shape of end_points4d: ", tf.shape(end_points4d))
     tf.print("Target shape: ", shape_5d)
     end_points5d = tf.reshape(end_points4d, shape_5d)
     # end_points5d = {}
