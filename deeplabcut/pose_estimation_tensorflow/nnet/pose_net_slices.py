@@ -115,11 +115,13 @@ class PoseNetSlices:
         depth_dim = self.cfg.num_z_slices # Full depth
         block_size = int(np.sqrt(depth_dim))
         depth_size = block_size**2 # Truncated depth
-        shape_5d = tf.shape(im_centered5d[:,0:depth_size])[2]
+
+        num_classes = len(self.cfg.all_joints)
 
         h = tf.shape(im_centered5d)[2]
         w = tf.shape(im_centered5d)[3]
         shape_4d = [1, h*block_size, w*block_size, 3]
+        shape_5d = [1, depth_size, h, w, num_classes] # No longer color 
 
         print("Input shape: ", shape_5d)
         print("Resnet analysis reshaping: ", shape_4d)
@@ -147,10 +149,10 @@ class PoseNetSlices:
         out = {}
         with tf.variable_scope('pose', reuse=reuse):
             out['part_pred'] = prediction_layer(cfg, features, 'part_pred',
-                                                cfg.num_joints, shape_5d)
+                                                cfg.num_joints, shape_5d=shape_5d)
             if cfg.location_refinement:
                 out['locref'] = prediction_layer(cfg, features, 'locref_pred',
-                                                 cfg.num_joints * 2, shape_5d)
+                                                 cfg.num_joints * 2, shape_5d=shape_5d)
             if cfg.intermediate_supervision:
                 if cfg.net_type=='resnet_50' and cfg.intermediate_supervision_layer>6:
                     print("Changing layer to 6! (higher ones don't exist in block 3 of ResNet 50).")
@@ -160,13 +162,13 @@ class PoseNetSlices:
                 out['part_pred_interm'] = prediction_layer(cfg, block_interm_out,
                                                            'intermediate_supervision',
                                                            cfg.num_joints,
-                                                           shape_5d)
+                                                           shape_5d=shape_5d)
 
         return out
 
     def get_net(self, inputs):
         net, end_points, shape_5d = self.extract_features(inputs)
-        return self.prediction_layers(net, end_points, shape_5d)
+        return self.prediction_layers(net, end_points, shape_5d=shape_5d)
 
     def test(self, inputs):
         heads = self.get_net(inputs)
