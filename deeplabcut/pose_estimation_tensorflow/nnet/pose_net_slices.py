@@ -21,17 +21,21 @@ net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_101': resnet_v1.resnet_v1_101,
              'resnet_152': resnet_v1.resnet_v1_152}
 
-def prediction_layer(cfg, input, name, num_outputs):
+def prediction_layer(cfg, input, name, num_outputs, shape_5d):
     # Update to 3d
     with slim.arg_scope([slim.conv3d, slim.conv3d_transpose], padding='SAME',
                         activation_fn=None, normalizer_fn=None,
                         weights_regularizer=slim.l2_regularizer(cfg.weight_decay)):
         with tf.variable_scope(name):
             # Update to 3d
-            pred = slim.convd_transpose(input, num_outputs,
+            pred4d = slim.convd_transpose(input, num_outputs,
                                          kernel_size=[3, 3, 3], stride=cfg.deconvolutionstride,
                                          scope='block4')
-            return pred
+
+            # Charlie addition: expand back to 5d
+            pred5d = expand_depth(pred4d, shape_5d)
+
+            return pred5d
 
 def compress_depth(img5d, depth_size, shape_4d):
     """
@@ -115,6 +119,8 @@ class PoseNetSlices:
         w = tf.shape(im_centered5d)[3]
         shape_4d = [1, h*block_size, w*block_size, 3]
 
+        print("Input shape: ", shape_5d)
+        print("Resnet analysis reshaping: ", shape_4d)
         im_centered4d = compress_depth(im_centered5d, depth_size, shape_4d)
 
         # The next part of the code depends upon which tensorflow version you have.
@@ -129,12 +135,9 @@ class PoseNetSlices:
                 net, end_points4d = net_fun(im_centered4d,
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
-        # Charlie addition: expand back to 5d
-        end_points5d = expand_depth(end_points4d, shape_5d)
+        return net, end_points4d, shape_5d
 
-        return net,end_points5d
-
-    def prediction_layers(self, features, end_points, reuse=None):
+    def prediction_layers(self, features, end_points, shape_5d, reuse=None):
         cfg = self.cfg
         num_layers = re.findall("resnet_([0-9]*)", cfg.net_type)[0]
         layer_name = 'resnet_v1_{}'.format(num_layers) + '/block{}/unit_{}/bottleneck_v1'
@@ -142,10 +145,10 @@ class PoseNetSlices:
         out = {}
         with tf.variable_scope('pose', reuse=reuse):
             out['part_pred'] = prediction_layer(cfg, features, 'part_pred',
-                                                cfg.num_joints)
+                                                cfg.num_joints, shape_5d)
             if cfg.location_refinement:
                 out['locref'] = prediction_layer(cfg, features, 'locref_pred',
-                                                 cfg.num_joints * 2)
+                                                 cfg.num_joints * 2, shape_5d)
             if cfg.intermediate_supervision:
                 if cfg.net_type=='resnet_50' and cfg.intermediate_supervision_layer>6:
                     print("Changing layer to 6! (higher ones don't exist in block 3 of ResNet 50).")
@@ -154,13 +157,14 @@ class PoseNetSlices:
                 block_interm_out = end_points[interm_name]
                 out['part_pred_interm'] = prediction_layer(cfg, block_interm_out,
                                                            'intermediate_supervision',
-                                                           cfg.num_joints)
+                                                           cfg.num_joints,
+                                                           shape_5d)
 
         return out
 
     def get_net(self, inputs):
-        net, end_points = self.extract_features(inputs)
-        return self.prediction_layers(net, end_points)
+        net, end_points, shape_5d = self.extract_features(inputs)
+        return self.prediction_layers(net, end_points, shape_5d)
 
     def test(self, inputs):
         heads = self.get_net(inputs)
