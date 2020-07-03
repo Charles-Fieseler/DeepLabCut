@@ -225,9 +225,8 @@ class PoseNetSlices:
         part_score_weights = batch[Batch.part_score_weights] if weigh_part_predictions else 1.0
 
         def add_part_loss(pred_layer):
-            print("Batch", batch[Batch.part_score_targets])
-            print("heads ", heads[pred_layer])
-            print("part_score_weights", part_score_weights)
+            tf.print("Batch", batch[Batch.part_score_targets])
+            tf.print("heads ", heads[pred_layer])
             return tf.losses.sigmoid_cross_entropy(batch[Batch.part_score_targets],
                                                    heads[pred_layer],
                                                    part_score_weights)

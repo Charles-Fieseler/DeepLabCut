@@ -225,7 +225,7 @@ class PoseDataset:
                 ]
 
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
-            tf.print("Calculated intermediate size: ", sm_size)
+            print("Calculated intermediate size: ", sm_size)
 
             scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
 
