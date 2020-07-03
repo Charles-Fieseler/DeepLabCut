@@ -47,23 +47,7 @@ def compress_depth(img5d, depth_size, shape_4d):
 
     See also: expand_depth
     """
-    # Next try: just reshape
     img4d = tf.reshape(img5d[:,0:depth_size,...], shape_4d)
-    # No training version: just tile
-    # depth_size = block_size**2
-    # print(img5d[:,0:depth_size,...].shape)
-    # img4d = tf.nn.depth_to_space(img5d[:,0:depth_size,...],
-    #                              block_size, name='expand')
-    # Contract using einstein summation
-    # with tf.variable_scope('compress', reuse=tf.AUTO_REUSE):
-    #     weights = tf.get_variable('weights_compress', shape=[depth_dim])
-    #     img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
-    # Swap dimensions to make depth last
-    # tf.transpose(img5d, perm=[0,2,3,4,1])
-    # # Use Dense layer to squish depth
-    # img4d = slim.fully_connected(img5d, 1)
-    # # Actually remove the dimension
-    # tf.squeeze(img4d, axis=4)
 
     return img4d
 
@@ -85,11 +69,6 @@ def expand_depth(end_points4d, shape_5d):
     # end_points5d = {}
     # for k, p in end_points4d.items():
     #     end_points5d[k] = tf.reshape(p, shape_5d)
-
-    # Contract using einstein summation
-    # with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
-    #     weights = tf.get_variable('weights_expand', shape=[depth_dim])
-    #     img5d = tf.einsum('iklm,j->ijklm', img4d, weights)
 
     return end_points5d
 
