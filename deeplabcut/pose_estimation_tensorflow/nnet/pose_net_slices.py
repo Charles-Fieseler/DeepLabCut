@@ -43,7 +43,8 @@ def compress_depth(img5d, depth_dim):
 
     # Contract using einstein summation
     weights = slim.model_variable('weights_compress',
-                                  shape=[depth_dim])
+                                  shape=[depth_dim],
+                                  reuse=True)
     img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
     # Swap dimensions to make depth last
     # tf.transpose(img5d, perm=[0,2,3,4,1])
@@ -67,7 +68,8 @@ def expand_depth(img4d, depth_dim):
 
     # Contract using einstein summation
     weights = slim.model_variable('weights_compress',
-                                  shape=[depth_dim])
+                                  shape=[depth_dim],
+                                  reuse=True)
     img4d = tf.einsum('iklm,j->ijklm', img5d, weights)
 
     return img5d
