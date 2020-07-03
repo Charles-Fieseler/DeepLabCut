@@ -243,8 +243,8 @@ class PoseDataset:
                 joint_id, scaled_joints, data_item, sm_size, scale
             )
 
-            print("part_score_targets: ", part_score_targets.shape)
-            print("part_score_targets: ", locref_targets.shape)
+            # print("part_score_targets: ", part_score_targets.shape)
+            # print("locref_targets: ", locref_targets.shape)
 
             batch.update(
                 {
