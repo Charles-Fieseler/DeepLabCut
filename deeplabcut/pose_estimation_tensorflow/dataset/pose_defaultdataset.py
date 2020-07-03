@@ -236,7 +236,7 @@ class PoseDataset:
             scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
 
             joint_id = [person_joints[:, 0].astype(int) for person_joints in joints]
-            if self.cfg.using_z_slices:
+            if not self.cfg.using_z_slices:
                 compute = self.compute_target_part_scoremap
             else:
                 compute = self.compute_target_part_scoremap_slices
