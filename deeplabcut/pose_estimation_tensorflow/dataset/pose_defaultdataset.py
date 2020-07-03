@@ -295,7 +295,7 @@ class PoseDataset:
                 j_y = np.asscalar(joint_pt[1])
                 # Note: the annotations are XYZ, but the masks are DHW=ZXY
                 # TODO: for now, truncate to depth of resnet output
-                j_z = tf.minimum(int(joint_pt[2])-1, truncated_depth) # new; starts at 1; not affected by stride or distance
+                j_z = min(int(joint_pt[2])-1, truncated_depth) # new; starts at 1; not affected by stride or distance
 
                 # don't loop over entire heatmap, but just relevant locations
                 j_x_sm = round((j_x - self.half_stride) / self.stride)
