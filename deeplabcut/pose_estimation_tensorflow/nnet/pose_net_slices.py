@@ -85,7 +85,7 @@ class PoseNetSlices:
     def extract_features(self, inputs):
         net_fun = net_funcs[self.cfg.net_type]
 
-        depth_dim = tf.TensorShape(inputs).as_list()[1]
+        depth_dim = self.cfg.num_z_slices
         # Update to be a mean throughout the volume
         mean = tf.constant(self.cfg.mean_pixel,
                            dtype=tf.float32, shape=[1, 1, 1, 1, 3], name='img_mean')
