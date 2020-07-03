@@ -21,7 +21,7 @@ net_funcs = {'resnet_50': resnet_v1.resnet_v1_50,
              'resnet_101': resnet_v1.resnet_v1_101,
              'resnet_152': resnet_v1.resnet_v1_152}
 
-def prediction_layer(cfg, input, name, num_outputs, shape_5d):
+def prediction_layer(cfg, input, name, num_outputs, block_size):
     # Update to 3d
     with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], padding='SAME',
                         activation_fn=None, normalizer_fn=None,
@@ -33,7 +33,7 @@ def prediction_layer(cfg, input, name, num_outputs, shape_5d):
                                          scope='block4')
 
             # Charlie addition: expand back to 5d
-            pred5d = expand_depth(pred4d, shape_5d)
+            pred5d = expand_depth(pred4d, block_size)
 
             return pred5d
 
@@ -51,8 +51,7 @@ def compress_depth(img5d, depth_size, shape_4d):
 
     return img4d
 
-
-def expand_depth(end_points4d, shape_5d):
+def expand_depth(end_points4d, block_size):
     """
     Go from 4d image to 5d, using the output from a pretrained resnet
         Uses tf.space_to_depth, and thus produces very large tiled pictures
@@ -64,13 +63,14 @@ def expand_depth(end_points4d, shape_5d):
     See also: compress_depth
     """
 
-    # print(type(end_points4d))
     tf.print("Shape of end_points4d: ", tf.shape(end_points4d))
-    tf.print("Target shape: ", shape_5d)
-    end_points5d = tf.reshape(end_points4d, shape_5d)
-    # end_points5d = {}
-    # for k, p in end_points4d.items():
-    #     end_points5d[k] = tf.reshape(p, shape_5d)
+    tf.print("Block size: ", block_size)
+    # map_fn only operates on the first dimension, so put channels there
+    end_points4d_ch_first = tf.transpose(end_points4d, perm=[2,0,1])
+    end_points5d_ch_first = tf.map_fn(lambda x: tf.space_to_depth(x,block_size),
+                                      end_points4d_ch_first)
+    end_points5d = tf.transpose(end_points5d_ch_first, perm=[1,2,0])
+    # end_points5d = tf.reshape(end_points4d, shape_5d)
 
     return end_points5d
 
@@ -102,7 +102,7 @@ class PoseNetSlices:
         h = tf.shape(im_centered5d)[2]
         w = tf.shape(im_centered5d)[3]
         shape_4d = [1, h*block_size, w*block_size, 3]
-        shape_5d = [1, depth_size, h, w, -1] # No longer color
+        # shape_5d = [1, depth_size, h, w, -1] # No longer color
 
         # print("Input shape: ", shape_5d)
         # print("Resnet analysis reshaping: ", shape_4d)
@@ -120,9 +120,9 @@ class PoseNetSlices:
                 net, end_points4d = net_fun(im_centered4d,
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
-        return net, end_points4d, shape_5d
+        return net, end_points4d, block_size
 
-    def prediction_layers(self, features, end_points, shape_5d, reuse=None):
+    def prediction_layers(self, features, end_points, block_size, reuse=None):
         cfg = self.cfg
         num_layers = re.findall("resnet_([0-9]*)", cfg.net_type)[0]
         layer_name = 'resnet_v1_{}'.format(num_layers) + '/block{}/unit_{}/bottleneck_v1'
@@ -130,10 +130,10 @@ class PoseNetSlices:
         out = {}
         with tf.variable_scope('pose', reuse=reuse):
             out['part_pred'] = prediction_layer(cfg, features, 'part_pred',
-                                                cfg.num_joints, shape_5d=shape_5d)
+                                                cfg.num_joints, block_size=block_size)
             if cfg.location_refinement:
                 out['locref'] = prediction_layer(cfg, features, 'locref_pred',
-                                                 cfg.num_joints * 2, shape_5d=shape_5d)
+                                                 cfg.num_joints * 2, block_size=block_size)
             if cfg.intermediate_supervision:
                 if cfg.net_type=='resnet_50' and cfg.intermediate_supervision_layer>6:
                     print("Changing layer to 6! (higher ones don't exist in block 3 of ResNet 50).")
@@ -143,13 +143,13 @@ class PoseNetSlices:
                 out['part_pred_interm'] = prediction_layer(cfg, block_interm_out,
                                                            'intermediate_supervision',
                                                            cfg.num_joints,
-                                                           shape_5d=shape_5d)
+                                                           block_size=block_size)
 
         return out
 
     def get_net(self, inputs):
-        net, end_points, shape_5d = self.extract_features(inputs)
-        return self.prediction_layers(net, end_points, shape_5d=shape_5d)
+        net, end_points, block_size = self.extract_features(inputs)
+        return self.prediction_layers(net, end_points, block_size=block_size)
 
     def test(self, inputs):
         heads = self.get_net(inputs)

@@ -238,7 +238,7 @@ class PoseDataset:
             else:
                 print("Scale ", scale)
                 scaled_joints = [person_joints[:, 1:4] * scale for person_joints in joints]
-                [print("Person joints ", person_joints) for person_joints in joints]
+                # [print("Person joints ", person_joints) for person_joints in joints]
 
             joint_id = [person_joints[:, 0].astype(int) for person_joints in joints]
             if not self.cfg.using_z_slices:
@@ -287,7 +287,7 @@ class PoseDataset:
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
-                print("Joint {} ".format(k), joint_pt)
+                # print("Joint {} ".format(k), joint_pt)
                 j_x = np.asscalar(joint_pt[0])
                 j_y = np.asscalar(joint_pt[1])
                 # Note: the annotations are XYZ, but the masks are DHW=ZXY
