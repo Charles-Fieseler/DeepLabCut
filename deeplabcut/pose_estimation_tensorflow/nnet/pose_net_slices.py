@@ -32,19 +32,24 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          scope='block4')
             return pred
 
-def compress_depth(img5d, depth_dim):
+def compress_depth(img5d, block_size):
     """
     Go from 5d image to 4d, appropriate for pretrained networks
+        Uses tf.depth_to_space, and thus produces very large tiled pictures
+        Also: requires a square number of slices; for now, cuts off the rest
     Input shape: NDHWC = (batch, depth, height, width, color)
     Output shape: NHWC
 
     See also: expand_depth
     """
-
+    # No training version: just tile
+    depth_size = block_size**2
+    img4d = tf.nn.depth_to_space(img5d[:,0:depth_size,...],
+                                 block_size, name='compress')
     # Contract using einstein summation
-    with tf.variable_scope('compress', reuse=tf.AUTO_REUSE):
-        weights = tf.get_variable('weights_compress', shape=[depth_dim])
-        img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
+    # with tf.variable_scope('compress', reuse=tf.AUTO_REUSE):
+    #     weights = tf.get_variable('weights_compress', shape=[depth_dim])
+    #     img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
     # Swap dimensions to make depth last
     # tf.transpose(img5d, perm=[0,2,3,4,1])
     # # Use Dense layer to squish depth
@@ -85,14 +90,15 @@ class PoseNetSlices:
     def extract_features(self, inputs):
         net_fun = net_funcs[self.cfg.net_type]
 
-        depth_dim = self.cfg.num_z_slices
         # Update to be a mean throughout the volume
         mean = tf.constant(self.cfg.mean_pixel,
                            dtype=tf.float32, shape=[1, 1, 1, 1, 3], name='img_mean')
         im_centered5d = inputs - mean
 
         # Charlie addition
-        im_centered4d = compress_depth(im_centered5d, depth_dim)
+        depth_dim = self.cfg.num_z_slices
+        block_size = int(sqrt(depth_dim))
+        im_centered4d = compress_depth(im_centered5d, block_size)
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
