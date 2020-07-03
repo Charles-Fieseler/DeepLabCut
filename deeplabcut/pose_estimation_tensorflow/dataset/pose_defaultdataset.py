@@ -277,7 +277,7 @@ class PoseDataset:
         num_joints = self.cfg.num_joints
 
         # TODO: truncate size to agree with resnet depth
-        size[0] = int(size[0])**2 # new
+        size[0] = int(np.sqrt(size[0]))**2 # new
 
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
