@@ -231,12 +231,12 @@ class PoseDataset:
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
             if self.cfg.using_z_slices:
                 sm_size[0] = scaled_img_size[0] # z should not be "strided"
-            print("Calculated intermediate size: ", sm_size)
+            # print("Calculated intermediate size: ", sm_size)
 
             if not self.cfg.using_z_slices:
                 scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
             else:
-                print("Scale ", scale)
+                # print("Scale ", scale)
                 scaled_joints = [person_joints[:, 1:4] * scale for person_joints in joints]
                 # [print("Person joints ", person_joints) for person_joints in joints]
 
@@ -276,13 +276,16 @@ class PoseDataset:
         dist_thresh_sq = dist_thresh ** 2
         num_joints = self.cfg.num_joints
 
+        # TODO: truncate size to agree with resnet depth
+        size[0] = int(size[0])**2 # new
+
         scmap = np.zeros(cat([size, arr([num_joints])]))
         locref_size = cat([size, arr([num_joints * 2])])
         locref_mask = np.zeros(locref_size)
         locref_map = np.zeros(locref_size)
         width = size[2] # new
         height = size[1] # new
-        print("Size: ", size)
+        truncated_depth = size[0] # new
 
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
@@ -291,8 +294,8 @@ class PoseDataset:
                 j_x = np.asscalar(joint_pt[0])
                 j_y = np.asscalar(joint_pt[1])
                 # Note: the annotations are XYZ, but the masks are DHW=ZXY
-                # TODO: these joint_pts seems scaled...
-                j_z = int(joint_pt[2])-1 # new; starts at 1; not affected by stride or distance
+                # TODO: for now, truncate to depth of resnet output
+                j_z = tf.minimum(int(joint_pt[2])-1, truncated_depth) # new; starts at 1; not affected by stride or distance
 
                 # don't loop over entire heatmap, but just relevant locations
                 j_x_sm = round((j_x - self.half_stride) / self.stride)
