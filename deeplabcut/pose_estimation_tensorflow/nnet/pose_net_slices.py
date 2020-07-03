@@ -33,7 +33,7 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          scope='block4')
             return pred
 
-def compress_depth(img5d, block_size, depth_size):
+def compress_depth(img5d, depth_size, shape_4d):
     """
     Go from 5d image to 4d, appropriate for pretrained networks
         Uses tf.depth_to_space, and thus produces very large tiled pictures
@@ -44,12 +44,7 @@ def compress_depth(img5d, block_size, depth_size):
     See also: expand_depth
     """
     # Next try: just reshape
-    h = tf.shape(img5d)[2]
-    w = tf.shape(img5d)[3]
-    new_shape = [1, h*block_size, w*block_size, 3]
-    print(img5d[:,0:depth_size,...].shape)
-    print(new_shape)
-    img4d = tf.reshape(img5d[:,0:depth_size,...], new_shape)
+    img4d = tf.reshape(img5d[:,0:depth_size,...], shape_4d)
     # No training version: just tile
     # depth_size = block_size**2
     # print(img5d[:,0:depth_size,...].shape)
@@ -69,7 +64,7 @@ def compress_depth(img5d, block_size, depth_size):
     return img4d
 
 
-def expand_depth(end_points4d, block_size, depth_size):
+def expand_depth(end_points4d, shape_5d):
     """
     Go from 4d image to 5d, using the output from a pretrained resnet
         Uses tf.space_to_depth, and thus produces very large tiled pictures
@@ -81,15 +76,9 @@ def expand_depth(end_points4d, block_size, depth_size):
     See also: compress_depth
     """
 
-    h = tf.shape(img5d)[2]
-    w = tf.shape(img5d)[3]
-    new_shape = [1, h*block_size, w*block_size, 3]
-    print(img5d[:,0:depth_size,...].shape)
-    print(new_shape)
-    img4d = tf.reshape(img5d[:,0:depth_size,...], new_shape)
     end_points5d = {}
     for k, p in end_points4d.items():
-        end_points5d[k] = tf.nn.depth_to_space(p, block_size, name='expand')
+        end_points5d[k] = tf.reshape(p, shape_5d)
 
     # Contract using einstein summation
     # with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
@@ -116,11 +105,16 @@ class PoseNetSlices:
                            dtype=tf.float32, shape=[1, 1, 1, 1, 3], name='img_mean')
         im_centered5d = inputs - mean
 
-        # Charlie addition
-        depth_dim = self.cfg.num_z_slices
+        # Charlie addition: calculate correct shapes
+        depth_dim = self.cfg.num_z_slices # Full depth
         block_size = int(np.sqrt(depth_dim))
-        depth_size = block_size**2
-        im_centered4d = compress_depth(im_centered5d, block_size, depth_size)
+        depth_size = block_size**2 # Truncated depth
+        shape_5d = tf.shape(img5d[:,0:depth_size])[2]
+
+        h, w = tf.shape(img5d)[2:3]
+        shape_4d = [1, h*block_size, w*block_size, 3]
+
+        im_centered4d = compress_depth(im_centered5d, depth_size, shape_4d)
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
@@ -135,8 +129,7 @@ class PoseNetSlices:
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
         # Charlie addition: expand back to 5d
-        # print(type(end_points4d))
-        end_points5d = expand_depth(end_points4d, block_size, depth_size)
+        end_points5d = expand_depth(end_points4d, shape_5d)
 
         return net,end_points5d
 
