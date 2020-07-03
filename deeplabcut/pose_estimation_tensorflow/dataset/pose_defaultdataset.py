@@ -285,7 +285,7 @@ class PoseDataset:
         locref_map = np.zeros(locref_size)
         width = size[2] # new
         height = size[1] # new
-        truncated_depth = size[0] # new
+        truncated_depth = size[0] - 1 # new
 
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
