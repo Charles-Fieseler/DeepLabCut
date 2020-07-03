@@ -68,7 +68,7 @@ def expand_depth(img4d, depth_dim):
     # Contract using einstein summation
     with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
         weights = tf.get_variable('weights_expand', shape=[depth_dim])
-        img4d = tf.einsum('iklm,j->ijklm', img5d, weights)
+        img5d = tf.einsum('iklm,j->ijklm', img4d, weights)
 
     return img5d
 
