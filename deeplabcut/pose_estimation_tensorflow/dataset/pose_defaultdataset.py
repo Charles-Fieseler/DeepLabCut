@@ -281,6 +281,7 @@ class PoseDataset:
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
+                print(joint_pt)
                 j_x = np.asscalar(joint_pt[1]) # new
                 j_y = np.asscalar(joint_pt[2]) # new
                 j_z = int(joint_pt[0]) # new; not affected by stride or distance
