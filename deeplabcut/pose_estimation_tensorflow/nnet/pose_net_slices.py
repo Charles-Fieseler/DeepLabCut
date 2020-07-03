@@ -32,7 +32,7 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          scope='block4')
             return pred
 
-def compress_depth(img5d):
+def compress_depth(img5d, depth_dim):
     """
     Go from 5d image to 4d, appropriate for pretrained networks
     Input shape: NDHWC = (batch, depth, height, width, color)
@@ -43,7 +43,7 @@ def compress_depth(img5d):
 
     # Contract using einstein summation
     weights = slim.model_variable('weights_compress',
-                                  shape=[img5d.shape[1]])
+                                  shape=[depth_dim])
     img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
     # Swap dimensions to make depth last
     # tf.transpose(img5d, perm=[0,2,3,4,1])
@@ -92,7 +92,7 @@ class PoseNetSlices:
         im_centered5d = inputs - mean
 
         # Charlie addition
-        im_centered4d = compress_depth(im_centered5d)
+        im_centered4d = compress_depth(im_centered5d, depth_dim)
         #
 
         # The next part of the code depends upon which tensorflow version you have.
