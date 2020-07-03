@@ -42,9 +42,9 @@ def compress_depth(img5d, depth_dim):
     """
 
     # Contract using einstein summation
-    weights = slim.model_variable('weights_compress',
-                                  shape=[depth_dim])
-    img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
+    with tf.variable_scope('compress', reuse=tf.AUTO_REUSE):
+        weights = tf.get_variable('weights_compress', shape=[depth_dim])
+        img4d = tf.einsum('ijklm,j->iklm', img5d, weights)
     # Swap dimensions to make depth last
     # tf.transpose(img5d, perm=[0,2,3,4,1])
     # # Use Dense layer to squish depth
@@ -66,9 +66,9 @@ def expand_depth(img4d, depth_dim):
     """
 
     # Contract using einstein summation
-    weights = slim.model_variable('weights_compress',
-                                  shape=[depth_dim])
-    img4d = tf.einsum('iklm,j->ijklm', img5d, weights)
+    with tf.variable_scope('expand', reuse=tf.AUTO_REUSE):
+        weights = tf.get_variable('weights_expand', shape=[depth_dim])
+        img4d = tf.einsum('iklm,j->ijklm', img5d, weights)
 
     return img5d
 
@@ -92,8 +92,7 @@ class PoseNetSlices:
         im_centered5d = inputs - mean
 
         # Charlie addition
-        with tf.variable_scope('compress', reuse=True):
-            im_centered4d = compress_depth(im_centered5d, depth_dim)
+        im_centered4d = compress_depth(im_centered5d, depth_dim)
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
@@ -108,8 +107,7 @@ class PoseNetSlices:
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
         # Charlie addition: expand back to 5d
-        with tf.variable_scope('expand', reuse=True):
-            end_points5d = expand_depth(end_points4d, depth_dim)
+        end_points5d = expand_depth(end_points4d, depth_dim)
 
         return net,end_points5d
 
