@@ -33,7 +33,7 @@ def prediction_layer(cfg, input, name, num_outputs):
                                          scope='block4')
             return pred
 
-def compress_depth(img5d, block_size):
+def compress_depth(img5d, block_size, depth_size):
     """
     Go from 5d image to 4d, appropriate for pretrained networks
         Uses tf.depth_to_space, and thus produces very large tiled pictures
@@ -44,7 +44,6 @@ def compress_depth(img5d, block_size):
     See also: expand_depth
     """
     # Next try: just reshape
-    depth_size = block_size**2
     h = tf.shape(img5d)[2]
     w = tf.shape(img5d)[3]
     new_shape = [1, h*block_size, w*block_size, 3]
@@ -70,7 +69,7 @@ def compress_depth(img5d, block_size):
     return img4d
 
 
-def expand_depth(end_points4d, block_size):
+def expand_depth(end_points4d, block_size, depth_size):
     """
     Go from 4d image to 5d, using the output from a pretrained resnet
         Uses tf.space_to_depth, and thus produces very large tiled pictures
@@ -81,6 +80,13 @@ def expand_depth(end_points4d, block_size):
 
     See also: compress_depth
     """
+
+    h = tf.shape(img5d)[2]
+    w = tf.shape(img5d)[3]
+    new_shape = [1, h*block_size, w*block_size, 3]
+    print(img5d[:,0:depth_size,...].shape)
+    print(new_shape)
+    img4d = tf.reshape(img5d[:,0:depth_size,...], new_shape)
     end_points5d = {}
     for k, p in end_points4d.items():
         end_points5d[k] = tf.nn.depth_to_space(p, block_size, name='expand')
@@ -113,7 +119,8 @@ class PoseNetSlices:
         # Charlie addition
         depth_dim = self.cfg.num_z_slices
         block_size = int(np.sqrt(depth_dim))
-        im_centered4d = compress_depth(im_centered5d, block_size)
+        depth_size = block_size**2
+        im_centered4d = compress_depth(im_centered5d, block_size, depth_size)
 
         # The next part of the code depends upon which tensorflow version you have.
         vers = tf.__version__
@@ -128,8 +135,8 @@ class PoseNetSlices:
                                           global_pool=False, output_stride=self.cfg.output_stride,is_training=False)
 
         # Charlie addition: expand back to 5d
-        print(type(end_points4d))
-        end_points5d = expand_depth(end_points4d, block_size)
+        # print(type(end_points4d))
+        end_points5d = expand_depth(end_points4d, block_size, depth_size)
 
         return net,end_points5d
 
