@@ -37,7 +37,6 @@ def imresize(img, size=1.0, interpolationmethod=cv2.INTER_AREA):
         print("4 dimensions detected; resizing not supported yet")
         return img
     elif size != 1.0:
-        print("Resizing")
         return cv2.resize(
             img, None, fx=size, fy=size, interpolation=interpolationmethod
         )  # (int(height*size),int(width*size)))
