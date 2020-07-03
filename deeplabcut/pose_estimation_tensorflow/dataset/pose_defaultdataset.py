@@ -236,6 +236,7 @@ class PoseDataset:
             if not self.cfg.using_z_slices:
                 scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
             else:
+                print("Scale ", scale)
                 scaled_joints = [person_joints[:, 1:4] * scale for person_joints in joints]
                 [print("Person joints ", person_joints) for person_joints in joints]
 
@@ -286,11 +287,12 @@ class PoseDataset:
         for person_id in range(len(coords)):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
-                print(joint_pt)
+                print("Joint {} ".format(k), joint_pt)
                 j_x = np.asscalar(joint_pt[0])
                 j_y = np.asscalar(joint_pt[1])
                 # Note: the annotations are XYZ, but the masks are DHW=ZXY
-                j_z = int(joint_pt[2]) # new; not affected by stride or distance
+                # TODO: these joint_pts seems scaled...
+                j_z = int(joint_pt[2])-1 # new; starts at 1; not affected by stride or distance
 
                 # don't loop over entire heatmap, but just relevant locations
                 j_x_sm = round((j_x - self.half_stride) / self.stride)
