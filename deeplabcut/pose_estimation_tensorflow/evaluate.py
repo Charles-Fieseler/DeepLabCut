@@ -798,8 +798,6 @@ def evaluate_network(
 
                             image_batch = data_to_input(image)
                             # Compute prediction with the CNN
-                            from IPython.core.debugger import set_trace
-                            set_trace()
                             outputs_np = sess.run(
                                 outputs, feed_dict={inputs: image_batch}
                             )

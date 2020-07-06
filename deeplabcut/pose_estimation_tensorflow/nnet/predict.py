@@ -35,8 +35,6 @@ from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 
 def setup_pose_prediction(cfg):
     TF.reset_default_graph()
-    from IPython.core.debugger import set_trace
-    set_trace()
     if not cfg.using_z_slices:
         # 2d input; default
         inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3])
@@ -69,8 +67,6 @@ def extract_cnn_output(outputs_np, cfg):
     """ extract locref + scmap from network """
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
-    from IPython.core.debugger import set_trace
-    set_trace()
     print("Shape of scmap: ", scmap.shape)
     locref = None
     if cfg.location_refinement:
