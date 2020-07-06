@@ -124,3 +124,7 @@ examples/WormTest-Charlie-2020-05-21/
 examples/WBFM_fromCBE/old_notebooks/
 examples/WBFM_fromCBE/old_images/
 examples/WBFM_fromCBE/shape_tests.ipynb
+
+examples/**/*.xml
+examples/WBFM_fromCBE/**/*.csv
+examples/WBFM_fromCBE/**/*.h5
