@@ -63,10 +63,14 @@ def extract_cnn_output(outputs_np, cfg):
     """ extract locref + scmap from network """
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
+    from IPython.core.debugger import set_trace
+    set_trace()
+    print("Shape of scmap: ", scmap.shape)
     locref = None
     if cfg.location_refinement:
         locref = np.squeeze(outputs_np[1])
         shape = locref.shape
+        print("Shape of locref: ", shape)
         locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
         locref *= cfg.locref_stdev
     if len(scmap.shape) == 2:  # for single body part!
