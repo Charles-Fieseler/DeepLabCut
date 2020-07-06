@@ -31,7 +31,6 @@ if int(vers[0]) == 1 and int(vers[1]) > 12:
 else:
     TF = tf
 from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
-from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net_slices
 
 
 def setup_pose_prediction(cfg):
@@ -40,13 +39,12 @@ def setup_pose_prediction(cfg):
     if not cfg.using_z_slices:
         # 2d input; default
         inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3])
-        net_heads = pose_net(cfg).test(inputs)
     else:
         # volume, i.e. z-slices input
         print("Setting up Volume-based evaluation")
         inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size, None, None, None, 3])
-        net_heads = pose_net_slices(cfg).test(inputs)
 
+    net_heads = pose_net(cfg).test(inputs)
     outputs = [net_heads["part_prob"]]
     if cfg.location_refinement:
         outputs.append(net_heads["locref"])
