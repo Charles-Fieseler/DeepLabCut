@@ -70,15 +70,15 @@ def extract_cnn_output(outputs_np, cfg):
     locref = None
     if cfg.location_refinement:
         locref = np.squeeze(outputs_np[1])
+        if cfg.using_z_slices:
+            # TODO: for now, do a depth projection so that later functions work
+            scmap = np.max(scmap,axis=0)
+            locref = np.max(locref,axis=0)
         shape = locref.shape
         locref = np.reshape(locref, (shape[0], shape[1], -1, 2))
         locref *= cfg.locref_stdev
     if len(scmap.shape) == 2:  # for single body part!
         scmap = np.expand_dims(scmap, axis=2)
-    if cfg.using_z_slices:
-        # TODO: for now, do a depth projection so that later functions work
-        scmap = np.max(scmap,axis=0)
-        locref = np.max(locref,axis=0)
     return scmap, locref
 
 
