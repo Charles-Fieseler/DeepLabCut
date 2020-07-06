@@ -35,7 +35,10 @@ from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 
 def setup_pose_prediction(cfg):
     TF.reset_default_graph()
-    inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3])
+    if not cfg.using_z_slices:
+        inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size, None, None, 3])
+    else:
+        inputs = TF.placeholder(tf.float32, shape=[cfg.batch_size, None, None, None, 3])
     net_heads = pose_net(cfg).test(inputs)
     outputs = [net_heads["part_prob"]]
     if cfg.location_refinement:
