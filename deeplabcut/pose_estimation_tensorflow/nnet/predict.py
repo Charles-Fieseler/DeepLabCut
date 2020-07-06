@@ -35,6 +35,7 @@ from deeplabcut.pose_estimation_tensorflow.nnet.net_factory import pose_net
 
 def setup_pose_prediction(cfg):
     TF.reset_default_graph()
+    from IPython.core.debugger import set_trace
     set_trace()
     if not cfg.using_z_slices:
         # 2d input; default
