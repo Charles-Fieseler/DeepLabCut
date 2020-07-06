@@ -86,8 +86,6 @@ def argmax_pose_predict(scmap, offmat, stride):
     """Combine scoremat and offsets to the final pose."""
     num_joints = scmap.shape[2]
     pose = []
-    from IPython.core.debugger import set_trace
-    set_trace()
     for joint_idx in range(num_joints):
         maxloc = np.unravel_index(
             np.argmax(scmap[:, :, joint_idx]), scmap[:, :, joint_idx].shape
