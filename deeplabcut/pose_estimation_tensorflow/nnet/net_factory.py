@@ -16,7 +16,7 @@ def pose_net(cfg):
         print("Initializing PoseNetSlices")
         from deeplabcut.pose_estimation_tensorflow.nnet.pose_net_slices import PoseNetSlices
         cls = PoseNetSlices
-        
+
         return cls(cfg)
 
     if "mobilenet" in net_type:  # multi currently not supported

@@ -277,10 +277,16 @@ def make_labeled_images_from_dataframe(
         images = images.str.replace(sep, os.path.sep)
     if not destfolder:
         destfolder = os.path.dirname(images[0])
-    print("Debug; reading from files: ", images)
+    # print("Debug; reading from files: ", images)
     tmpfolder = destfolder + "_labeled"
     attempttomakefolder(tmpfolder)
-    ic = io.imread_collection(images.to_list())
+    # Charlie: allow this to work with tiff files
+    if cfg['using_z_slices']:
+        # This is just a list
+        ic = [io.imread(file) for file in images.to_list()]
+        # ic = io.imread_collection(images.to_list(), plugin='tifffile')
+    else:
+        ic = io.imread_collection(images.to_list())
 
     # Charlie: if z_slices, format is zxy
     if cfg['using_z_slices']:
@@ -296,7 +302,9 @@ def make_labeled_images_from_dataframe(
     scat.set_color(colors)
     # Charlie: only keep xy if annotations are xyz
     if cfg['using_z_slices']:
-        xy = df.values.reshape((df.shape[0], -1, 3))[:,:,0:2]
+        # Why do I need a 4 here? does the old df not have likelihoods but I do?
+        xy = df.values.reshape((df.shape[0], -1, 3))[:,:,1:3]
+        # xy = df.values.reshape((df.shape[0], -1, 4))[:,:,1:3]
         im.set_clim(0.0, 1.0) # Is this needed even for 2d? I think so
     else:
         xy = df.values.reshape((df.shape[0], -1, 2))
@@ -319,7 +327,8 @@ def make_labeled_images_from_dataframe(
         if ind_bones:
             coll.set_segments(segs[i])
         scat.set_offsets(coords)
-        imagename = os.path.basename(ic.files[i])
+        # imagename = os.path.basename(ic.files[i])
+        imagename = os.path.basename(images.to_list()[i])
         fig.tight_layout()
         fig.savefig(
             os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png"))

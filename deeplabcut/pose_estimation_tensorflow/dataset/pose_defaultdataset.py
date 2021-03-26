@@ -179,9 +179,10 @@ class PoseDataset:
 
         # print(im_file, os.getcwd())
         # print(self.cfg.project_path)
-        image = imread(os.path.join(self.cfg.project_path, im_file), mode="RGB")
+        vid_fname = os.path.join(self.cfg.project_path, im_file)
+        image = imread(vid_fname, mode="RGB")
+        # print("Full image filename: ", vid_fname)
         # print("Shape of read image: ", image.shape)
-        # print("Image filename: ", imfile)
 
         if self.has_gt:
             joints = np.copy(data_item.joints)
@@ -208,8 +209,15 @@ class PoseDataset:
             img = imresize(image, scale) if scale != 1 else image
             scaled_img_size = arr(img.shape[0:2])
         else:
-            img = imresize(image, scale) if scale < 1 else image
-            scaled_img_size = arr(img.shape[0:3])
+            # img = imresize(image, scale) if scale < 1 else image
+            # if scale != 1:
+            #     zspan = range(image.shape[0])
+            #     img = np.array([imresize(image[z,...], scale) for z in zspan])
+            #     print(f"{img.shape}")
+            # else:
+            #     img = image
+            img = image # Just ignore scale
+            scaled_img_size = arr(img.shape[:3]) # Ignore color
         if mirror:
             img = np.fliplr(img)
 
@@ -231,7 +239,7 @@ class PoseDataset:
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
             if self.cfg.using_z_slices:
                 sm_size[0] = scaled_img_size[0] # z should not be "strided"
-            # print("Calculated intermediate size: ", sm_size)
+            print(f"Resized to {sm_size} from {image.shape} using scale {scale}")
 
             if not self.cfg.using_z_slices:
                 scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]

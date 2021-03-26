@@ -105,6 +105,7 @@ class PoseNetSlices:
 
         h = tf.shape(im_centered5d)[2]
         w = tf.shape(im_centered5d)[3]
+        # zzz
         shape_4d = [1, h*block_size, w*block_size, 3]
         # shape_5d = [1, depth_size, h, w, -1] # No longer color
 

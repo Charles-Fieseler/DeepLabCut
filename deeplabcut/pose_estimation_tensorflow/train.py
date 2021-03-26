@@ -255,8 +255,8 @@ def train(
     stats_path = Path(config_yaml).with_name("learning_stats.csv")
     lrf = open(str(stats_path), "w")
 
-    print("Training parameter:")
-    print(cfg)
+    print("Training parameter (no longer printed)")
+    # print(cfg)
     print("Starting training....")
     for it in range(max_iter + 1):
         current_lr = lr_gen.get_lr(it)
